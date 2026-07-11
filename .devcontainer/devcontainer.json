@@ -8,6 +8,9 @@
   "workspaceFolder": "/workspace",
 
   "mounts": ["source=${localWorkspaceFolder},target=/workspace,type=bind"],
+
+  "forwardPorts": [3000],
+
   "customizations": {
     "vscode": {
       "extensions": [
