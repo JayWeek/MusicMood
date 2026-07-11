@@ -45,3 +45,5 @@ next-env.d.ts
 
 # discarded docs folder only
 docs/discarded\ docs/
+
+.pnpm-store
