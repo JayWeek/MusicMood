@@ -16,10 +16,6 @@ Install dependencies:
 
 ```bash
 npm install
-# or
-yarn
-# or
-pnpm install
 ```
 
 Run the development server:
