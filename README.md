@@ -1,3 +1,6 @@
+# Prince Godwyll's Favorite Qoute
+The pain of discipline is lighter than the pain of regret
+
 # MusicMood
 
 MusicMood is a mood-driven music discovery web app and lightweight player built with Next.js. It helps users create and explore playlists based on moods, quickly play tracks in-browser, and persist listening history. The app integrates with YouTube for playback and Supabase for lightweight persistence and auth.
