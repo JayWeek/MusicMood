@@ -34,16 +34,16 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const url = request.nextUrl.clone();
-  const isAuthPage = url.pathname.startsWith('/login') || url.pathname.startsWith('/signup');
+  const isAuthPage = url.pathname.startsWith('/auth');
   
   // Define our application root page or landing page path if not logging in
   const isRootPage = url.pathname === '/';
 
   // 3. SECURE ROUTE GUARD ENFORCEMENT
   if (!user) {
-    // If user is NOT logged in, and tries to access anything other than login/signup/root
+    // If user is NOT logged in, and tries to access anything other than auth page and /
     if (!isAuthPage && !isRootPage) {
-      url.pathname = '/login';
+      url.pathname = '/auth';
       return NextResponse.redirect(url);
     }
   } else {
