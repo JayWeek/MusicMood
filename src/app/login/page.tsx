@@ -1,4 +1,4 @@
-import { login, signUp } from '../auth/actions';
+import { login, signUp } from '../actions/auth';
 
 export default function IntegrationTestPage() {
   return (
