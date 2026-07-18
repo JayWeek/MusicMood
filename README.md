@@ -1,56 +1,36 @@
-# Prince Godwyll's Favorite Qoute
-The pain of discipline is lighter than the pain of regret
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-# MusicMood
+## Getting Started
 
-MusicMood is a mood-driven music discovery web app and lightweight player built with Next.js. It helps users create and explore playlists based on moods, quickly play tracks in-browser, and persist listening history. The app integrates with YouTube for playback and Supabase for lightweight persistence and auth.
-
-Key ideas:
-- Suggest playlists based on a user's mood or keywords.
-- Quick in-browser playback with a minimal player UI.
-- Persist user history and preferences to an external store (Supabase).
-
-## Quick Start
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Run the development server:
+First, run the development server:
 
 ```bash
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Build for production:
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-```bash
-npm run build
-npm run start
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-Helpful scripts:
-- `npm run dev` — start the dev server
-- `npm run build` — build the app for production
-- `npm run start` — start the production server
-- `npm run lint` — run ESLint
-- `npm run type-check` — run TypeScript checks
-- `npm run format` — format code with Prettier
-- `npm run check` — lint, type-check, and format-check
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Open http://localhost:3000 in your browser after `npm run dev`.
+## Learn More
 
-## Project docs
+To learn more about Next.js, take a look at the following resources:
 
-For more detailed design notes and implementation tasks, see the repository docs:
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-- Project overview: [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
-- Implementation tasks: [docs/ROLE_BASED_IMPLEMENTATION_TASKS.md](docs/ROLE_BASED_IMPLEMENTATION_TASKS.md)
-- Team workflow: [docs/TEAM_WORKFLOW.md](docs/TEAM_WORKFLOW.md)
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Vercel
 
----
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-This repository is a Next.js project.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
