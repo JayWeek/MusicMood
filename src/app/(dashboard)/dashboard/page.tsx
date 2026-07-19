@@ -1,56 +1,16 @@
-"use client";
+import DashboardClient from "@/components/dashboard/DashboardClient";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-import { useState } from "react";
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-import PromptBox from "@/components/dashboard/PromptBox";
-import MoodChips from "@/components/dashboard/MoodChips";
-import GenerateButton from "@/components/dashboard/GenerateButton";
-import LoadingAI from "@/components/dashboard/LoadingAI";
-
-import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
-
-import PlaylistHeader from "@/components/playlist/PlayListHeader";
-import { mockTracks } from "@/lib/mockTracks";
-
-export default function DashboardPage() {
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [generated, setGenerated] = useState(false);
-
-  async function generatePlaylist() {
-    if (!prompt) return;
-
-    setLoading(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-
-    setLoading(false);
-
-    setGenerated(true);
+  if (!user) {
+    redirect("/auth");
   }
 
-  return (
-    <div className="mx-auto max-w-7xl">
-      {!generated ? (
-        <DashboardSkeleton />
-      ) : (
-        <>
-          <PromptBox value={prompt} onChange={setPrompt} />
-
-          <MoodChips onSelect={setPrompt} />
-
-          <GenerateButton loading={loading} onClick={generatePlaylist} />
-
-          {loading && <LoadingAI />}
-
-          <PlaylistHeader
-            title="Late Night Coding"
-            totalSongs={mockTracks.length}
-            duration="2h 18m"
-            generatedBy="AI"
-          />
-        </>
-      )}
-    </div>
-  );
+  return <DashboardClient />;
 }

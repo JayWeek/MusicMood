@@ -11,7 +11,7 @@ export default function Player() {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-800 bg-[#181818] px-6 py-4">
+    <footer className="z-50 shrink-0 border-t border-zinc-800 bg-[#181818] px-6 py-4">
 
       <div className="grid grid-cols-3 items-center gap-8">
 

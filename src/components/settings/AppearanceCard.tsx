@@ -10,8 +10,7 @@ export default function AppearanceCard() {
 
         <label className="flex items-center gap-3">
 
-          <input type="radio" checked />
-
+          <input type="radio" defaultChecked />
           Dark Theme
 
         </label>
