@@ -9,6 +9,7 @@ import {
   Settings,
   Library,
 } from "lucide-react";
+import LogOutBtn from "../auth/LogoutBtn";
 
 const menuItems = [
   {
@@ -40,7 +41,7 @@ const menuItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="hidden md:flex w-64 bg-black border-r border-zinc-800 flex-col">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-800 bg-black md:flex">
       {/* Logo */}
       <div className="px-6 py-8">
         <h1 className="text-3xl font-bold text-green-500">
@@ -72,7 +73,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Library */}
-      <div className="mt-10 px-6">
+      <div className="mt-10 flex-1 overflow-y-auto px-6 pb-6">
         <div className="flex items-center gap-3 text-zinc-400">
           <Library size={20} />
           <span className="font-medium">Your Library</span>
@@ -100,6 +101,10 @@ export default function Sidebar() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-auto w-full border-t border-zinc-800 p-4">
+        <LogOutBtn />
       </div>
     </aside>
   );

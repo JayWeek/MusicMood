@@ -1,4 +1,4 @@
-export default function ProfileCard() {
+export default function ProfileCard({name, email}: {name:string, email:string}) {
   return (
     <div className="rounded-xl bg-zinc-900 p-6">
 
@@ -11,11 +11,13 @@ export default function ProfileCard() {
         <input
           placeholder="Full Name"
           className="w-full rounded-lg bg-zinc-800 p-3"
+          value={name}
         />
 
         <input
           placeholder="Email"
           className="w-full rounded-lg bg-zinc-800 p-3"
+          value={email}
         />
 
       </div>

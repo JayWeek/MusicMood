@@ -4,7 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const requestedPath = request.nextUrl.searchParams.get("next");
-  const nextPath = requestedPath?.startsWith("/") ? requestedPath : "/dashboard";
+  
+  const nextPath =
+  requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+    ? requestedPath
+    : "/dashboard";
 
   if (code) {
     const supabase = await createClient();
