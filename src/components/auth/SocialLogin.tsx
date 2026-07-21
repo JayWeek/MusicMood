@@ -1,5 +1,9 @@
-import GoogleLoginButton from "./GoogleBtn";
-import GithubLoginButton from "./GithubBtn";
+
+"use client";
+
+import { loginWithGitHub, loginWithGoogle } from "@/app/auth/actions";
+import { FaGithub, FaGoogle } from "react-icons/fa6";
+
 export default function SocialLogin() {
   return (
     <>
@@ -14,9 +18,23 @@ export default function SocialLogin() {
       </div>
 
       <div className="space-y-3">
-       <GoogleLoginButton />
+        <button
+          type="submit"
+          formAction={loginWithGoogle}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-zinc-700 py-3 hover:border-white"
+        >
+          <FaGoogle className="text-zinc-400 hover:text-white" size={18} />
+          Google
+        </button>
 
-       <GithubLoginButton />
+        <button
+          type="submit"
+          formAction={loginWithGitHub}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-zinc-700 py-3 hover:border-white"
+        >
+          <FaGithub className="text-zinc-400 hover:text-white" size={20} />
+          GitHub
+        </button>
       </div>
     </>
   );
