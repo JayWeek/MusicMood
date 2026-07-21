@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 
-import { login, signUp } from "@/app/auth/actions";
+import { login, signUp, type AuthResponse } from "@/app/api/actions/auth";
 import LoginFields from "./LoginFields";
 import SignupFields from "./SignupFields";
 import SocialLogin from "./SocialLogin";
@@ -11,6 +11,12 @@ interface AuthFormProps {
   isSignup: boolean;
   onToggle: () => void;
 }
+
+const initialState: AuthResponse = {
+  success: false,
+  message: "",
+  errors: {},
+};
 
 export default function AuthForm({
   isSignup,
@@ -21,7 +27,18 @@ export default function AuthForm({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const action = isSignup ? signUp : login;
+  const [signUpState, signUpAction, isSignUpPending] = useActionState(
+    signUp,
+    initialState,
+  );
+  const [loginState, loginAction, isLoginPending] = useActionState(
+    login,
+    initialState,
+  );
+
+  const state = isSignup ? signUpState : loginState;
+  const isPending = isSignup ? isSignUpPending : isLoginPending;
+  const action = isSignup ? signUpAction : loginAction;
 
   return (
     <form action={action} className="space-y-5">
@@ -31,6 +48,7 @@ export default function AuthForm({
           email={email}
           password={password}
           confirmPassword={confirmPassword}
+          errors={state.errors}
           onNameChange={setName}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
@@ -40,6 +58,7 @@ export default function AuthForm({
         <LoginFields
           email={email}
           password={password}
+          errors={state.errors}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
         />
@@ -47,10 +66,26 @@ export default function AuthForm({
 
       <button
         type="submit"
-        className="w-full rounded-full bg-green-500 py-3 font-semibold text-black transition hover:bg-green-400"
+        disabled={isPending}
+        className="w-full rounded-full bg-green-500 py-3 font-semibold text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSignup ? "Create Account" : "Sign In"}
+        {isPending
+          ? isSignup
+            ? "Creating Account..."
+            : "Signing In..."
+          : isSignup
+            ? "Create Account"
+            : "Sign In"}
       </button>
+
+      {state.message && (
+        <p
+          className={state.success ? "text-sm text-green-400" : "text-sm text-red-400"}
+          aria-live="polite"
+        >
+          {state.message}
+        </p>
+      )}
 
       <SocialLogin />
 
