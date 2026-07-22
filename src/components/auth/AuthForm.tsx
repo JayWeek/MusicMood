@@ -1,9 +1,11 @@
 "use client";
+
 import { useActionState, useState } from "react";
+
+import { login, signUp, type AuthResponse } from "@/app/api/actions/auth";
 import LoginFields from "./LoginFields";
 import SignupFields from "./SignupFields";
 import SocialLogin from "./SocialLogin";
-import { login, signUp, type AuthResponse } from "@/app/api/actions/auth";
 
 interface AuthFormProps {
   isSignup: boolean;
@@ -24,6 +26,7 @@ export default function AuthForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [signUpState, signUpAction, isSignUpPending] = useActionState(
     signUp,
     initialState,
@@ -32,12 +35,14 @@ export default function AuthForm({
     login,
     initialState,
   );
+
   const state = isSignup ? signUpState : loginState;
   const isPending = isSignup ? isSignUpPending : isLoginPending;
+  const action = isSignup ? signUpAction : loginAction;
 
   return (
-    <form action={isSignup ? signUpAction : loginAction} className="space-y-5">
-        {isSignup ? (
+    <form action={action} className="space-y-5">
+      {isSignup ? (
         <SignupFields
           name={name}
           email={email}
