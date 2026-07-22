@@ -6,11 +6,15 @@ import FeaturedPlaylists from "@/components/landing/FeaturedPlaylists";
 import Testimonials from "@/components/landing/Testimonials";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
+import { createClient } from "@/lib/supabase/server";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient()
+  const {data: {user}} = await supabase.auth.getUser()
+
   return (
     <>
-      <Navbar />
+      <Navbar isAuthentcated={!!user}/>
 
       <Hero />
 

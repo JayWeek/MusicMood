@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Music2 } from "lucide-react";
 
-export default function Navbar() {
+export default function Navbar({isAuthentcated =false}:{isAuthentcated:boolean}) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
@@ -38,6 +38,24 @@ export default function Navbar() {
         </nav>
 
         {/* Actions */}
+
+        { isAuthentcated ? <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard"
+            className="hidden text-zinc-300 transition hover:text-white sm:block"
+          >
+            Dashboard
+          </Link>
+
+          <Link
+            href="/playlist"
+            className="rounded-full bg-green-500 px-6 py-3 font-semibold text-black transition hover:bg-green-400"
+          >
+            Listen 
+          </Link>
+        </div>
+         : 
+
         <div className="flex items-center gap-4">
           <Link
             href="/auth"
@@ -53,6 +71,9 @@ export default function Navbar() {
             Get Started
           </Link>
         </div>
+        }
+
+       
 
       </div>
     </header>
