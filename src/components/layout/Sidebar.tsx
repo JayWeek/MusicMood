@@ -1,5 +1,5 @@
 "use client";
-
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   House,
@@ -8,6 +8,7 @@ import {
   Heart,
   Settings,
   Library,
+  Music,
 } from "lucide-react";
 import LogOutBtn from "../auth/LogoutBtn";
 
@@ -19,8 +20,14 @@ const menuItems = [
   },
   {
     title: "Generate",
-    href: "/dashboard",
+    href: "/generate",
     icon: Sparkles,
+  },
+
+  {
+    title: "Now Playing",
+    href: "/playing",
+    icon: Music,
   },
   {
     title: "History",
@@ -40,13 +47,14 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
+  const path = usePathname()
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-800 bg-black md:flex">
       {/* Logo */}
       <div className="px-6 py-8">
-        <h1 className="text-3xl font-bold text-green-500">
+        <Link href={"/"} className="text-3xl font-bold text-green-500">
           MusicMood
-        </h1>
+        </Link>
 
         <p className="text-sm text-zinc-400 mt-1">
           AI Music Generator
@@ -62,7 +70,7 @@ export default function Sidebar() {
             <Link
               key={item.title}
               href={item.href}
-              className="flex items-center gap-4 rounded-xl px-4 py-3 text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+              className={`flex items-center gap-4 rounded-xl px-4 py-3 transition hover:bg-zinc-900 hover:text-white ${path === item.href ? 'text-green-500' : 'text-zinc-300'}`}
             >
               <Icon size={22} />
 
