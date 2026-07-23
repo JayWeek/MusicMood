@@ -54,7 +54,7 @@ export default function Testimonials() {
               </div>
 
               <p className="leading-8 text-zinc-300">
-                "{item.comment}"
+                &quot;{item.comment}&quot;
               </p>
 
               <h4 className="mt-8 font-semibold">

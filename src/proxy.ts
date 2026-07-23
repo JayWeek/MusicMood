@@ -36,7 +36,8 @@ export async function proxy(request: NextRequest) {
   const isAuthPage = pathname === "/auth";
   const isAuthEndpoint =
     pathname === "/auth/callback" || pathname === "/auth/confirm";
-  const isPublicRoute = isLandingPage || isAuthPage || isAuthEndpoint;
+  const isGenerateEndpoint = pathname === "/api/playlists/generate";
+  const isPublicRoute = isLandingPage || isAuthPage || isAuthEndpoint || isGenerateEndpoint;
 
   if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL("/auth", request.url));
