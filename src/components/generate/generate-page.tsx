@@ -12,8 +12,8 @@ type GeneratePlaylistResponse = {
 };
 
 export default function MusicMoodGeneratePage() {
-  const [moodText, setMoodText] = useState("");
-  const [playlist, setPlaylist] = useState<GeneratedPlaylist | null>(null);
+  const [prompt, setPrompt] = useState("");
+  const [, setPlaylist] = useState<GeneratedPlaylist | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +22,7 @@ export default function MusicMoodGeneratePage() {
   async function handleGeneratePlaylist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (moodText.trim().length < 3) {
+    if (prompt.trim().length < 3) {
       setError("Please describe how you are feeling.");
       return;
     }
@@ -37,9 +37,7 @@ export default function MusicMoodGeneratePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          moodText,
-        }),
+        body: JSON.stringify({ prompt }),
       });
 
       const data = (await response.json()) as GeneratePlaylistResponse;
@@ -49,13 +47,11 @@ export default function MusicMoodGeneratePage() {
       }
 
       setPlaylist(data.playlist);
-      if (playlist) {
-        const playlistParam = encodeURIComponent(JSON.stringify(data.playlist));
-        router.push(`/playing?playlist=${playlistParam}`);
-      }
+      const playlistParam = encodeURIComponent(JSON.stringify(data.playlist));
+      router.push(`/playing?playlist=${playlistParam}`);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error ? error.message : "Something went wrong.",
       );
     } finally {
       setIsLoading(false);
@@ -63,14 +59,12 @@ export default function MusicMoodGeneratePage() {
   }
 
   return (
-    <>
-      <GeneratePromptForm
-        handleGeneratePlaylist={handleGeneratePlaylist}
-        isLoading={isLoading}
-        setMoodText={setMoodText}
-        moodText={moodText}
-        error={error}
-      />
-    </>
+    <GeneratePromptForm
+      handleGeneratePlaylist={handleGeneratePlaylist}
+      isLoading={isLoading}
+      setMoodText={setPrompt}
+      moodText={prompt}
+      error={error}
+    />
   );
 }
