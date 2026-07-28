@@ -3,6 +3,7 @@
 import TrackArtwork from "./TrackArtwork";
 import TrackControls from "./TrackControls";
 import TrackMeta from "./TrackMeta";
+import type { FavoriteSongInput } from "@/lib/services/favorites";
 
 interface TrackPlayerPreviewProps {
   title: string;
@@ -11,6 +12,7 @@ interface TrackPlayerPreviewProps {
   liked: boolean;
   onToggle: () => void;
   onLike: () => void;
+  favoriteSong?: FavoriteSongInput;
 }
 
 export default function TrackPlayerPreview({
@@ -20,6 +22,7 @@ export default function TrackPlayerPreview({
   liked,
   onToggle,
   onLike,
+  favoriteSong,
 }: TrackPlayerPreviewProps) {
   return (
     <>
@@ -43,6 +46,7 @@ export default function TrackPlayerPreview({
         liked={liked}
         onToggle={onToggle}
         onLike={onLike}
+        favoriteSong={favoriteSong}
       />
     </>
   );

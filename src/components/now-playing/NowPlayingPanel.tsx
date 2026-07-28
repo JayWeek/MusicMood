@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import EachTrackInPlaylist from "./EachTrackInPlaylist";
 
 export type currentTrack = {
@@ -16,15 +14,18 @@ type Props = {
   setPlaying: (val: boolean) => void;
   setLiked: (val: boolean) => void;
   queue: currentTrack[];
+  currentSongIndex: number;
+  onSelectSong: (index: number) => void;
 };
 
-export default function NowPlayingPanel({ liked, playing, queue }: Props) {
-  const router = useRouter();
+export default function NowPlayingPanel({
+  liked,
+  playing,
+  queue,
+  currentSongIndex,
+  onSelectSong,
+}: Props) {
   const safeQueue = queue ?? [];
-
-  const handleFallbackClick = () => {
-    router.push("/generate");
-  };
 
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 shadow-2xl shadow-black/20">
@@ -42,14 +43,14 @@ export default function NowPlayingPanel({ liked, playing, queue }: Props) {
 
         <ul className="space-y-2 text-sm text-zinc-400">
           {safeQueue.length > 0 ? (
-            safeQueue.map((item) => (
+            safeQueue.map((item, index) => (
               <EachTrackInPlaylist
-                key={item.title}
+                key={`${item.title}-${item.artist}`}
                 title={item.title}
                 artist={item.artist}
-                playing={playing}
+                playing={playing && currentSongIndex === index}
                 liked={liked}
-                onClick={handleFallbackClick}
+                onClick={() => onSelectSong(index)}
                 isDefault={
                   safeQueue.length > 0 && item.title === "Midnight City"
                 }

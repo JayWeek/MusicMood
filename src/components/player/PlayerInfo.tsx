@@ -1,30 +1,29 @@
 "use client";
 
-import Image from "next/image";
-import { Heart } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface PlayerInfoProps {
   title: string;
   artist: string;
   artwork: string;
-  liked?: boolean;
+  favoriteControl?: ReactNode;
 }
 
 export default function PlayerInfo({
   title,
   artist,
   artwork,
-  liked = false,
+  favoriteControl,
 }: PlayerInfoProps) {
   return (
     <div className="flex items-center gap-4 w-72">
 
-      <Image
+      <img
         src={artwork}
         alt={title}
         width={60}
         height={60}
-        className="rounded-lg"
+        className="h-[60px] w-[60px] rounded-lg object-cover"
       />
 
       <div className="flex-1 overflow-hidden">
@@ -35,14 +34,7 @@ export default function PlayerInfo({
         </p>
       </div>
 
-      <Heart
-        size={18}
-        className={
-          liked
-            ? "fill-green-500 text-green-500 cursor-pointer"
-            : "cursor-pointer text-zinc-500 hover:text-white"
-        }
-      />
+      {favoriteControl}
 
     </div>
   );

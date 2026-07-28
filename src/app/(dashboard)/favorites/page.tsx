@@ -1,27 +1,63 @@
 import FavoriteHeader from "@/components/favorites/FavoriteHeader";
-import EmptyState from "@/components/track/EmptyState";
-import TrackTable from "@/components/track/TrackTable";
+import FavoriteTable from "@/components/favorites/FavoriteTable";
+import { createClient } from "@/lib/supabase/server";
+import type FavoriteSong from "@/types/favorite";
 
-import { mockFavorites } from "@/lib/mockFavorites";
+export const dynamic = "force-dynamic";
 
-export default function FavoritesPage() {
-  return (
-    <div className="mx-auto max-w-7xl">
-      <FavoriteHeader />
+export default async function FavoritesPage() {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-      {mockFavorites.length > 0 ? (
-        <TrackTable tracks={mockFavorites} />
-      ) : (
-        <EmptyState
-          title="No Favorite Songs Yet"
-          description="Songs you like will appear here."
-          action={
-            <button className="rounded-full bg-green-500 px-6 py-3 font-semibold text-black transition hover:bg-green-400">
-              Browse Music
-            </button>
-          }
-        />
-      )}
-    </div>
-  );
+    if (authError || !user) {
+      return (
+        <div className="mx-auto max-w-7xl">
+          <FavoriteHeader />
+          <FavoriteTable songs={[]} />
+        </div>
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("favorite_songs")
+      .select("id, title, artist, youtube_id, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const songs: FavoriteSong[] = (data ?? []).map((song) => ({
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      youtubeId: song.youtube_id,
+      createdAt: song.created_at,
+      // Fixes broken images by deriving the URL directly from the youtube_id field
+      thumbnail: song.youtube_id
+        ? `https://img.youtube.com/vi/${song.youtube_id}/mqdefault.jpg`
+        : "https://picsum.photos/200",
+    }));
+
+    return (
+      <div className="mx-auto max-w-7xl">
+        <FavoriteHeader />
+        <FavoriteTable songs={songs} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Failed to load favorites", error);
+
+    return (
+      <div className="mx-auto max-w-7xl">
+        <FavoriteHeader />
+        <FavoriteTable songs={[]} />
+      </div>
+    );
+  }
 }
