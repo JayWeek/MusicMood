@@ -4,6 +4,7 @@ import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
 
 import TrackArtwork from "./TrackArtwork";
 import TrackMeta from "./TrackMeta";
+import type { FavoriteSongInput } from "@/lib/services/favorites";
 
 type PlaylistSong = GeneratedPlaylist["playlist"]["songs"][number];
 
@@ -15,6 +16,7 @@ interface TrackPlayerPreviewProps {
   liked: boolean;
   onToggle: () => void;
   onLike: () => void;
+  favoriteSong?: FavoriteSongInput;
 }
 
 export default function TrackPlayerPreview({
@@ -23,6 +25,8 @@ export default function TrackPlayerPreview({
   currentTime = "0:00",
   playing,
   onToggle,
+  onLike,
+  favoriteSong,
 }: TrackPlayerPreviewProps) {
   return (
     <>
@@ -34,11 +38,19 @@ export default function TrackPlayerPreview({
       />
 
       <TrackMeta
-        title={song.title}
-        artist={song.artist}
-        mood={mood}
-        currentTime={currentTime}
-        duration={song.duration}
+        title={title}
+        artist={artist}
+        mood="Focus"
+        currentTime="1:12"
+        duration="3:24"
+      />
+
+      <TrackControls
+        playing={playing}
+        liked={liked}
+        onToggle={onToggle}
+        onLike={onLike}
+        favoriteSong={favoriteSong}
       />
     </>
   );

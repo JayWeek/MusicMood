@@ -1,8 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
-import GeneratePromptForm from "./generate-prompt";
 import { useRouter } from "next/navigation";
 
 export type GeneratePlaylistResponse = {
@@ -10,14 +8,16 @@ export type GeneratePlaylistResponse = {
   playlist?: GeneratedPlaylist;
   message?: string;
 };
+import { useAudioStore } from "@/stores/audioStore";
+import { generatePlaylist } from "@/lib/services/playlist-generation-client";
+import GeneratePromptForm from "./generate-prompt";
 
 export default function MusicMoodGeneratePage() {
   const [prompt, setPrompt] = useState("");
-  const [, setPlaylist] = useState<GeneratedPlaylist | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const setStorePlaylist = useAudioStore((state) => state.setPlaylist);
 
   async function handleGeneratePlaylist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,25 +29,11 @@ export default function MusicMoodGeneratePage() {
 
     setIsLoading(true);
     setError("");
-    setPlaylist(null);
 
     try {
-      const response = await fetch("/api/playlists/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const data = (await response.json()) as GeneratePlaylistResponse;
-
-      if (!response.ok || !data.success || !data.playlist) {
-        throw new Error(data.message ?? "The playlist could not be generated.");
-      }
-
-      setPlaylist(data.playlist);
-      const playlistParam = encodeURIComponent(JSON.stringify(data.playlist));
+      const playlist = await generatePlaylist(prompt);
+      setStorePlaylist(playlist);
+      const playlistParam = encodeURIComponent(JSON.stringify(playlist));
       router.push(`/playing?playlist=${playlistParam}`);
     } catch (error) {
       setError(

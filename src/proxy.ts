@@ -27,19 +27,26 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  let authLookupFailed = false;
+
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch (error) {
+    authLookupFailed = true;
+    console.error("Supabase auth lookup failed in proxy", error);
+  }
 
   const { pathname } = request.nextUrl;
   const isLandingPage = pathname === "/";
   const isAuthPage = pathname === "/auth";
   const isAuthEndpoint =
     pathname === "/auth/callback" || pathname === "/auth/confirm";
-  // const isGenerateEndpoint = pathname === "/api/playlists/generate";
-  const isPublicRoute = isLandingPage || isAuthPage || isAuthEndpoint;
+  const isGenerateEndpoint = pathname === "/api/playlists/generate";
+  const isPublicRoute = isLandingPage || isAuthPage || isAuthEndpoint || isGenerateEndpoint;
 
-  if (!user && !isPublicRoute) {
+  if (!user && !isPublicRoute && !authLookupFailed) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
 

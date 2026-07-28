@@ -1,8 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
-import EachTrackInPlaylist, { type PlaylistSong } from "./EachTrackInPlaylist";
+import EachTrackInPlaylist from "./EachTrackInPlaylist";
 
 export type CurrentTrack = PlaylistSong & {
   reason?: string;
@@ -12,32 +10,21 @@ interface NowPlayingPanelProps {
   mood: string;
   playing: boolean;
   liked: boolean;
-  queue: CurrentTrack[];
-  activeVideoId?: string;
-  isDefaultQueue?: boolean;
-  onTrackSelect?: (track: CurrentTrack, index: number) => void;
-}
+  setPlaying: (val: boolean) => void;
+  setLiked: (val: boolean) => void;
+  queue: currentTrack[];
+  currentSongIndex: number;
+  onSelectSong: (index: number) => void;
+};
 
 export default function NowPlayingPanel({
   liked,
   playing,
-  mood,
   queue,
-  activeVideoId,
-  isDefaultQueue = false,
-  onTrackSelect,
-}: NowPlayingPanelProps) {
-  const router = useRouter();
+  currentSongIndex,
+  onSelectSong,
+}: Props) {
   const safeQueue = queue ?? [];
-
-  const handleTrackClick = (track: CurrentTrack, index: number) => {
-    if (isDefaultQueue) {
-      router.push("/generate");
-      return;
-    }
-
-    onTrackSelect?.(track, index);
-  };
 
   return (
     <div className="p-5 shadow-2xl">
@@ -56,15 +43,17 @@ export default function NowPlayingPanel({
 
         <ul className="space-y-2 text-sm text-zinc-400">
           {safeQueue.length > 0 ? (
-            safeQueue.map((song, index) => (
+            safeQueue.map((item, index) => (
               <EachTrackInPlaylist
-                key={index}
-                song={song}
-                index={index}
-                playing={playing && song.videoId === activeVideoId}
+                key={`${item.title}-${item.artist}`}
+                title={item.title}
+                artist={item.artist}
+                playing={playing && currentSongIndex === index}
                 liked={liked}
-                isDefault={isDefaultQueue}
-                onClick={() => handleTrackClick(song, index)}
+                onClick={() => onSelectSong(index)}
+                isDefault={
+                  safeQueue.length > 0 && item.title === "Midnight City"
+                }
               />
             ))
           ) : (
