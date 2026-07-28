@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme inline {
+  --manrope: var(--manrope);
+}
+
 :root {
   --background: #121212;
   --sidebar: #000000;
@@ -17,7 +21,7 @@
 body {
   background: var(--background);
   color: var(--text);
-  font-family: Inter, sans-serif;
+  font-family: var(--manrope);
 }
 
 * {

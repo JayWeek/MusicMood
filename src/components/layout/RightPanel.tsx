@@ -4,11 +4,27 @@ import AIInsightsCard from "./AIInsightsCard";
 import TrackPlayerPreview from "../now-playing/TrackPlayerPreview";
 import { useAudioStore } from "@/stores/audioStore";
 
+function formatTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "0:00";
+  }
+
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${mins}:${secs}`;
+}
+
 export default function RightPanel() {
   const currentSong = useAudioStore((state) => state.currentSong);
   const isPlaying = useAudioStore((state) => state.isPlaying);
   const toggle = useAudioStore((state) => state.toggle);
   const mood = useAudioStore((state) => state.mood);
+  const progress = useAudioStore((state) => state.progress);
+  const duration = useAudioStore((state) => state.duration);
+  const playlist = useAudioStore((state) => state.playlist);
 
   if (!currentSong) {
     return;
@@ -20,11 +36,10 @@ export default function RightPanel() {
           playing={isPlaying}
           playlistMood={mood}
           song={currentSong}
-          currentTime={currentSong?.duration}
-          durration={currentSong?.duration}
+          currentTime={formatTime(progress)}
+          durration={formatTime(duration)}
           liked={false}
           onToggle={toggle}
-          // onLike={() => {}}
           favoriteSong={
             currentSong
               ? {
@@ -37,7 +52,10 @@ export default function RightPanel() {
         />
       </div>
 
-      <AIInsightsCard />
+      <AIInsightsCard
+        moods={playlist?.mood || []}
+        title={playlist?.title || ""}
+      />
     </aside>
   );
 }
