@@ -1,30 +1,48 @@
 "use client";
 
 import EachTrackInPlaylist from "./EachTrackInPlaylist";
+import { useAudioStore } from "@/stores/audioStore";
 
-export type CurrentTrack = PlaylistSong & {
-  reason?: string;
-};
+export default function NowPlayingPanel() {
+  const playlist = useAudioStore((state) => state.playlist);
 
-interface NowPlayingPanelProps {
-  mood: string;
-  playing: boolean;
-  liked: boolean;
-  setPlaying: (val: boolean) => void;
-  setLiked: (val: boolean) => void;
-  queue: currentTrack[];
-  currentSongIndex: number;
-  onSelectSong: (index: number) => void;
-};
+  const currentSongIndex = useAudioStore((state) => state.currentSongIndex);
 
-export default function NowPlayingPanel({
-  liked,
-  playing,
-  queue,
-  currentSongIndex,
-  onSelectSong,
-}: Props) {
-  const safeQueue = queue ?? [];
+  const isPlaying = useAudioStore((state) => state.isPlaying);
+
+  const liked = useAudioStore((state) => state.liked);
+
+  const play = useAudioStore((state) => state.play);
+
+  const pause = useAudioStore((state) => state.pause);
+
+  const selectSong = useAudioStore((state) => state.selectSong);
+
+  const songs = playlist?.songs ?? [];
+
+  const handleTrackClick = (index: number) => {
+    const selectedSong = songs[index];
+
+    if (!selectedSong) {
+      return;
+    }
+
+    const isCurrentSong = index === currentSongIndex;
+
+    if (isCurrentSong) {
+      if (isPlaying) {
+        pause();
+      } else {
+        play();
+      }
+
+      return;
+    }
+
+    // selectSong updates currentSong/currentSongIndex
+    // and sets isPlaying to true.
+    selectSong(index);
+  };
 
   return (
     <div className="p-5 shadow-2xl">
@@ -34,28 +52,29 @@ export default function NowPlayingPanel({
 
       <div className="mt-5 pt-4">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">
-            {(mood && mood) || "Up Next"}
+          <h3 className="text-sm font-semibold text-white capitalize">
+            {playlist?.mood?.at(0) ?? "Up Next"}
           </h3>
 
-          <span className="text-xs text-zinc-500">{safeQueue.length}</span>
+          <span className="text-xs text-zinc-500">{songs.length}</span>
         </div>
 
         <ul className="space-y-2 text-sm text-zinc-400">
-          {safeQueue.length > 0 ? (
-            safeQueue.map((item, index) => (
-              <EachTrackInPlaylist
-                key={`${item.title}-${item.artist}`}
-                title={item.title}
-                artist={item.artist}
-                playing={playing && currentSongIndex === index}
-                liked={liked}
-                onClick={() => onSelectSong(index)}
-                isDefault={
-                  safeQueue.length > 0 && item.title === "Midnight City"
-                }
-              />
-            ))
+          {songs.length > 0 ? (
+            songs.map((song, index) => {
+              const isActiveSong = index === currentSongIndex;
+
+              return (
+                <EachTrackInPlaylist
+                  key={index}
+                  song={song}
+                  index={index}
+                  playing={isActiveSong && isPlaying}
+                  liked={isActiveSong && liked}
+                  onClick={() => handleTrackClick(index)}
+                />
+              );
+            })
           ) : (
             <li className="rounded-lg bg-zinc-950/50 px-3 py-3 text-sm text-zinc-500">
               No tracks available yet.

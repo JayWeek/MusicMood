@@ -46,6 +46,8 @@ type AudioState = {
   progress: number;
   duration: number;
   isMuted: boolean;
+  mood: string;
+  liked: boolean;
   isShuffleEnabled: boolean;
   repeatMode: RepeatMode;
   seekTarget: number | null;
@@ -53,19 +55,26 @@ type AudioState = {
 
 type AudioActions = {
   setPlaylist: (playlist: PlaylistInput) => void;
+
   play: () => void;
   pause: () => void;
   toggle: () => void;
+
   toggleShuffle: () => void;
   cycleRepeatMode: () => void;
+
   selectSong: (index: number) => void;
   next: () => void;
   previous: () => void;
+
   seek: (seconds: number) => void;
+
   setVolume: (volume: number) => void;
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
   setMuted: (value: boolean) => void;
+  setLiked: (liked: boolean) => void;
+
   clearPlaylist: () => void;
   clearSeekTarget: () => void;
 };
@@ -80,7 +89,9 @@ function normalizeSong(song: Partial<PlaylistSong> | undefined): PlaylistSong {
   };
 }
 
-function normalizePlaylist(input: PlaylistInput | null | undefined): PlaylistData | null {
+function normalizePlaylist(
+  input: PlaylistInput | null | undefined
+): PlaylistData | null {
   if (!input) {
     return null;
   }
@@ -88,6 +99,7 @@ function normalizePlaylist(input: PlaylistInput | null | undefined): PlaylistDat
   const maybeWrapped = input as PlaylistInput & {
     playlist?: PlaylistData | GeneratedPlaylist | null;
   };
+
   const source =
     maybeWrapped.playlist && typeof maybeWrapped.playlist === "object"
       ? maybeWrapped.playlist
@@ -99,6 +111,7 @@ function normalizePlaylist(input: PlaylistInput | null | undefined): PlaylistDat
 
   const candidate = source as PlaylistData & {
     songs?: PlaylistSong[];
+
     tracks?: Array<{
       title: string;
       artist: string;
@@ -106,6 +119,7 @@ function normalizePlaylist(input: PlaylistInput | null | undefined): PlaylistDat
       thumbnail?: string;
       duration?: string;
     }>;
+
     title?: string;
     description?: string;
     mood?: string[];
@@ -114,177 +128,323 @@ function normalizePlaylist(input: PlaylistInput | null | undefined): PlaylistDat
   const songs = Array.isArray(candidate.songs)
     ? candidate.songs.map((song) => normalizeSong(song))
     : Array.isArray(candidate.tracks)
-      ? candidate.tracks.map((track) => normalizeSong({
-          title: track.title,
-          artist: track.artist,
-          videoId: track.videoId,
-          thumbnail: track.thumbnail,
-          duration: track.duration,
-        }))
+      ? candidate.tracks.map((track) =>
+          normalizeSong({
+            title: track.title,
+            artist: track.artist,
+            videoId: track.videoId,
+            thumbnail: track.thumbnail,
+            duration: track.duration,
+          })
+        )
       : [];
 
   return {
     title: candidate.title ?? "Untitled Playlist",
+
     description: candidate.description ?? "",
+
     mood: Array.isArray(candidate.mood) ? candidate.mood : [],
+
     songs,
   };
 }
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value));
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
 
-export const useAudioStore = create<AudioState & AudioActions>()((set, get) => ({
-  playlist: null,
-  currentSongIndex: -1,
-  currentSong: null,
-  isPlaying: false,
-  volume: 70,
-  progress: 0,
-  duration: 0,
-  isMuted: false,
-  isShuffleEnabled: false,
-  repeatMode: "off",
-  seekTarget: null,
+export const useAudioStore = create<AudioState & AudioActions>()(
+  (set, get) => ({
+    playlist: null,
+    currentSongIndex: -1,
+    currentSong: null,
+
+    isPlaying: false,
+
+    volume: 70,
+    progress: 0,
+    duration: 0,
+    isMuted: false,
+    liked: false,
+    mood: "",
+
+    isShuffleEnabled: false,
+    repeatMode: "off",
+
+    seekTarget: null,
 
     setPlaylist: (playlistInput) => {
-    const playlist = normalizePlaylist(playlistInput);
-    const firstSong = playlist?.songs[0] ?? null;
+      const playlist = normalizePlaylist(playlistInput);
 
-    set({
+      const firstSong = playlist?.songs[0] ?? null;
+
+      set({
         playlist,
+
         currentSongIndex: firstSong ? 0 : -1,
+        mood: playlist?.mood?.[0] ?? "",
+
         currentSong: firstSong,
-        isPlaying: false, // Start as FALSE to let the user click play first
+
+        // Wait for the user to start playback.
+        isPlaying: false,
+
         progress: 0,
         duration: 0,
         seekTarget: null,
-    });
+        liked: false,
+      });
     },
 
-  play: () => set({ isPlaying: true }),
+    play: () => {
+      const { currentSong } = get();
 
-  pause: () => set({ isPlaying: false }),
+      if (!currentSong) {
+        return;
+      }
 
-  toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),
+      set({
+        isPlaying: true,
+      });
+    },
 
-  toggleShuffle: () =>
-    set((state) => ({ isShuffleEnabled: !state.isShuffleEnabled })),
+    pause: () => {
+      set({
+        isPlaying: false,
+      });
+    },
 
-  cycleRepeatMode: () =>
-    set((state) => ({
-      repeatMode:
-        state.repeatMode === "off"
-          ? "all"
-          : state.repeatMode === "all"
-            ? "one"
-            : "off",
-    })),
+    toggle: () => {
+      const { currentSong } = get();
 
-  selectSong: (index) => {
-    const songs = get().playlist?.songs ?? [];
-    const song = songs[index];
+      if (!currentSong) {
+        return;
+      }
 
-    if (!song) {
-      return;
-    }
+      set((state) => ({
+        isPlaying: !state.isPlaying,
+      }));
+    },
 
-    set({
-      currentSongIndex: index,
-      currentSong: song,
-      isPlaying: true,
-      progress: 0,
-      duration: 0,
-      seekTarget: null,
-    });
-  },
+    setLiked: (liked) => {
+      set({ liked });
+    },
 
-  next: () => {
-    const { currentSongIndex, isShuffleEnabled, repeatMode } = get();
-    const songs = get().playlist?.songs ?? [];
+    toggleShuffle: () => {
+      set((state) => ({
+        isShuffleEnabled: !state.isShuffleEnabled,
+      }));
+    },
 
-    if (songs.length === 0 || currentSongIndex < 0) {
-      return;
-    }
+    cycleRepeatMode: () => {
+      set((state) => ({
+        repeatMode:
+          state.repeatMode === "off"
+            ? "all"
+            : state.repeatMode === "all"
+              ? "one"
+              : "off",
+      }));
+    },
 
-    if (repeatMode === "one") {
-      set({ isPlaying: true, progress: 0, seekTarget: 0 });
-      return;
-    }
+    selectSong: (index) => {
+      const songs = get().playlist?.songs ?? [];
 
-    const isLastSong = currentSongIndex >= songs.length - 1;
-    if (isLastSong && !isShuffleEnabled && repeatMode !== "all") {
-      set({ isPlaying: false, progress: get().duration, seekTarget: null });
-      return;
-    }
+      const song = songs[index];
 
-    const availableIndices = songs
-      .map((_, index) => index)
-      .filter((index) => index !== currentSongIndex);
-    const nextIndex = isShuffleEnabled && availableIndices.length > 0
-      ? availableIndices[Math.floor(Math.random() * availableIndices.length)]
-      : isLastSong
-        ? 0
-        : currentSongIndex + 1;
+      if (!song) {
+        return;
+      }
 
-    set({
-      currentSongIndex: nextIndex,
-      currentSong: songs[nextIndex] ?? null,
-      isPlaying: true,
-      progress: 0,
-      duration: 0,
-      seekTarget: null,
-    });
-  },
+      set({
+        currentSongIndex: index,
+        currentSong: song,
 
-  previous: () => {
-    const songs = get().playlist?.songs ?? [];
-    const previousIndex = get().currentSongIndex - 1;
+        // Start the selected track.
+        isPlaying: true,
 
-    if (previousIndex < 0) {
-      set({ isPlaying: false, progress: 0, duration: 0, seekTarget: null });
-      return;
-    }
+        progress: 0,
+        duration: 0,
 
-    set({
-      currentSongIndex: previousIndex,
-      currentSong: songs[previousIndex] ?? null,
-      isPlaying: true,
-      progress: 0,
-      duration: 0,
-      seekTarget: null,
-    });
-  },
+        // Player will seek to zero and call play()
+        // after the new source becomes ready.
+        seekTarget: 0,
 
-  seek: (seconds) => {
-    set({
-      progress: clamp(seconds, 0, get().duration || seconds),
-      seekTarget: clamp(seconds, 0, get().duration || seconds),
-    });
-  },
+        liked: false,
+      });
+    },
 
-  setVolume: (volume) => {
-    set({ volume: clamp(volume, 0, 100) });
-  },
+    next: () => {
+      const { currentSongIndex, isShuffleEnabled, repeatMode, duration } =
+        get();
 
-  setProgress: (progress) => {
-    set({ progress: clamp(progress, 0, get().duration || progress) });
-  },
+      const songs = get().playlist?.songs ?? [];
 
-  setDuration: (duration) => set({ duration: Math.max(duration, 0) }),
+      if (songs.length === 0 || currentSongIndex < 0) {
+        return;
+      }
 
-  setMuted: (value) => set({ isMuted: value }),
+      if (repeatMode === "one") {
+        set({
+          isPlaying: true,
+          progress: 0,
+          seekTarget: 0,
+        });
 
-  clearPlaylist: () =>
-    set({
-      playlist: null,
-      currentSongIndex: -1,
-      currentSong: null,
-      isPlaying: false,
-      progress: 0,
-      duration: 0,
-      seekTarget: null,
-    }),
+        return;
+      }
 
-  clearSeekTarget: () => set({ seekTarget: null }),
-}));
+      const isLastSong = currentSongIndex >= songs.length - 1;
+
+      if (isLastSong && !isShuffleEnabled && repeatMode !== "all") {
+        set({
+          isPlaying: false,
+          progress: duration,
+          seekTarget: null,
+        });
+
+        return;
+      }
+
+      const availableIndices = songs
+        .map((_, index) => index)
+        .filter((index) => index !== currentSongIndex);
+
+      const nextIndex =
+        isShuffleEnabled && availableIndices.length > 0
+          ? availableIndices[
+              Math.floor(Math.random() * availableIndices.length)
+            ]
+          : isLastSong
+            ? 0
+            : currentSongIndex + 1;
+
+      set({
+        currentSongIndex: nextIndex,
+        currentSong: songs[nextIndex] ?? null,
+
+        isPlaying: true,
+
+        progress: 0,
+        duration: 0,
+
+        // Explicitly start the next song
+        // once its player is ready.
+        seekTarget: 0,
+
+        liked: false,
+      });
+    },
+
+    previous: () => {
+      const { currentSongIndex, progress } = get();
+
+      const songs = get().playlist?.songs ?? [];
+
+      if (songs.length === 0 || currentSongIndex < 0) {
+        return;
+      }
+
+      // If more than three seconds into the song,
+      // restart the current song.
+      if (progress > 3) {
+        set({
+          progress: 0,
+          isPlaying: true,
+          seekTarget: 0,
+        });
+
+        return;
+      }
+
+      const previousIndex = currentSongIndex - 1;
+
+      if (previousIndex < 0) {
+        set({
+          progress: 0,
+          isPlaying: true,
+          seekTarget: 0,
+        });
+
+        return;
+      }
+
+      set({
+        currentSongIndex: previousIndex,
+
+        currentSong: songs[previousIndex] ?? null,
+
+        isPlaying: true,
+
+        progress: 0,
+        duration: 0,
+
+        // Explicitly start the previous song
+        // once its player is ready.
+        seekTarget: 0,
+
+        liked: false,
+      });
+    },
+
+    seek: (seconds) => {
+      const maximum = get().duration || seconds;
+
+      const nextPosition = clamp(seconds, 0, maximum);
+
+      set({
+        progress: nextPosition,
+        seekTarget: nextPosition,
+      });
+    },
+
+    setVolume: (volume) => {
+      set({
+        volume: clamp(volume, 0, 100),
+      });
+    },
+
+    setProgress: (progress) => {
+      const maximum = get().duration || progress;
+
+      set({
+        progress: clamp(progress, 0, maximum),
+      });
+    },
+
+    setDuration: (duration) => {
+      set({
+        duration: Math.max(duration, 0),
+      });
+    },
+
+    setMuted: (value) => {
+      set({
+        isMuted: value,
+      });
+    },
+
+    clearPlaylist: () => {
+      set({
+        playlist: null,
+        currentSongIndex: -1,
+        currentSong: null,
+
+        isPlaying: false,
+
+        progress: 0,
+        duration: 0,
+        seekTarget: null,
+
+        liked: false,
+      });
+    },
+
+    clearSeekTarget: () => {
+      set({
+        seekTarget: null,
+      });
+    },
+  })
+);

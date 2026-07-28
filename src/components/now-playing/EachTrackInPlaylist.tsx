@@ -2,14 +2,7 @@
 
 import Image from "next/image";
 import { Heart, Music2, Pause, Play } from "lucide-react";
-
-export interface PlaylistSong {
-  title: string;
-  artist: string;
-  videoId: string;
-  thumbnail: string;
-  duration: string;
-}
+import { PlaylistSong } from "@/stores/audioStore";
 
 interface EachTrackInPlaylistProps {
   song: PlaylistSong;
@@ -17,7 +10,7 @@ interface EachTrackInPlaylistProps {
   playing: boolean;
   liked: boolean;
   onClick?: () => void;
-  isDefault?: boolean;
+  isDefault?: PlaylistSong;
 }
 
 function isAbsoluteImageUrl(value: string): boolean {
@@ -55,7 +48,6 @@ export default function EachTrackInPlaylist({
   playing,
   liked,
   onClick,
-  isDefault = false,
 }: EachTrackInPlaylistProps) {
   const artwork = getTrackArtwork(song);
 
@@ -66,11 +58,9 @@ export default function EachTrackInPlaylist({
         onClick={onClick}
         className="group grid w-full grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-[#2a2a2a] focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
         aria-label={
-          isDefault
-            ? `Generate tracks based on ${song.title}`
-            : playing
-              ? `Pause ${song.title} by ${song.artist}`
-              : `Play ${song.title} by ${song.artist}`
+          playing
+            ? `Pause ${song.title} by ${song.artist}`
+            : `Play ${song.title} by ${song.artist}`
         }
       >
         <div className="relative flex size-9 items-center justify-center">
@@ -136,12 +126,6 @@ export default function EachTrackInPlaylist({
             <p className="mt-0.5 truncate text-sm text-[#b3b3b3]">
               {song.artist}
             </p>
-
-            {isDefault && (
-              <p className="mt-1 truncate text-xs text-[#1ed760]">
-                Click to generate tracks based on your current mood
-              </p>
-            )}
           </div>
         </div>
 

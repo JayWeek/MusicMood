@@ -1,46 +1,105 @@
 "use client";
 
 import Image from "next/image";
-import { Pause, Play } from "lucide-react";
+import { Music2, Pause, Play } from "lucide-react";
 
 interface TrackArtworkProps {
   title: string;
-  artwork: string;
-  playing?: boolean;
-  onToggle?: () => void;
+  artwork?: string | null;
+  videoId?: string | null;
+  playing: boolean;
+  onToggle: () => void;
+}
+
+function isValidImageSource(value: string | null | undefined): value is string {
+  if (!value) {
+    return false;
+  }
+
+  // Allow valid local images.
+  if (value.startsWith("/")) {
+    return true;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function getArtworkSource({
+  artwork,
+  videoId,
+}: {
+  artwork?: string | null;
+  videoId?: string | null;
+}): string | null {
+  if (isValidImageSource(artwork)) {
+    return artwork;
+  }
+
+  const normalizedVideoId = videoId?.trim() ?? "";
+
+  if (
+    normalizedVideoId &&
+    !normalizedVideoId.toLowerCase().startsWith("unknown")
+  ) {
+    return `https://i.ytimg.com/vi/${encodeURIComponent(
+      normalizedVideoId
+    )}/hqdefault.jpg`;
+  }
+
+  return null;
 }
 
 export default function TrackArtwork({
   title,
   artwork,
-  playing = false,
+  videoId,
+  playing,
   onToggle,
 }: TrackArtworkProps) {
+  const artworkSource = getArtworkSource({
+    artwork,
+    videoId,
+  });
+
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/60">
-      <Image
-        src={artwork}
-        alt={title}
-        width={200}
-        height={200}
-        className="aspect-square w-full object-cover transition duration-300 group-hover:scale-105"
-      />
+    <div className="group relative aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/60">
+      {artworkSource ? (
+        <Image
+          src={artworkSource}
+          alt={`${title} artwork`}
+          fill
+          sizes="320px"
+          priority
+          className="object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#1ed760] to-[#063d1b]">
+          <Music2 className="size-16 text-black" aria-hidden="true" />
+        </div>
+      )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-      {onToggle ? (
-        <button
-          type="button"
-          onClick={onToggle}
-          className="absolute right-3 bottom-3 rounded-full border border-white/20 bg-black/70 p-3 text-white backdrop-blur transition hover:scale-105"
-        >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute inset-0 flex items-center justify-center"
+        aria-label={playing ? `Pause ${title}` : `Play ${title}`}
+      >
+        <span className="flex size-14 items-center justify-center rounded-full bg-[#1ed760] text-black shadow-xl transition-transform hover:scale-105">
           {playing ? (
-            <Pause size={18} />
+            <Pause className="size-6 fill-current" aria-hidden="true" />
           ) : (
-            <Play size={18} className="ml-0.5" />
+            <Play className="ml-1 size-6 fill-current" aria-hidden="true" />
           )}
-        </button>
-      ) : null}
+        </span>
+      </button>
     </div>
   );
 }

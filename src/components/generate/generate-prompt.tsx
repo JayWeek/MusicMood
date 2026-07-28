@@ -34,12 +34,13 @@ export default function GeneratePromptForm({
             onChange={(event) => setMoodText(event.target.value)}
             placeholder="For example: I feel stressed after a long day and need calm music."
             maxLength={500}
-            className="flex-1 min-h-[320px] w-full resize-none rounded-[1.5rem] border border-green-500/20 bg-zinc-950/70 p-6 text-lg text-zinc-100 placeholder:text-zinc-500 outline-none transition focus:border-green-400 focus:ring-4 focus:ring-green-500/20"
+            className="min-h-[320px] w-full flex-1 resize-none rounded-[1.5rem] border border-green-500/20 bg-zinc-950/70 p-6 text-lg text-zinc-100 transition outline-none placeholder:text-zinc-500 focus:border-green-400 focus:ring-4 focus:ring-green-500/20"
           />
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-zinc-400">
-              Try describing your energy, vibe, or the feeling you want to carry with you.
+              Try describing your energy, vibe, or the feeling you want to carry
+              with you.
             </p>
 
             <button

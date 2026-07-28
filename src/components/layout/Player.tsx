@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+
 import { useAudioStore } from "@/stores/audioStore";
 import FavoriteButton from "@/components/favorites/FavoriteButton";
 import PlayerInfo from "../player/PlayerInfo";
@@ -13,16 +14,66 @@ const ReactPlayer = dynamic(() => import("react-player"), {
   ssr: false,
 });
 
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-  return `${mins}:${secs}`;
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "0:00";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+
+  const secondsRemaining = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${minutes}:${secondsRemaining}`;
+}
+
+function isValidHttpUrl(value: string | null | undefined): value is string {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function isValidVideoId(value: string | null | undefined): value is string {
+  if (!value?.trim()) {
+    return false;
+  }
+
+  return !value.trim().toLowerCase().startsWith("unknown");
+}
+
+function getArtworkUrl({
+  thumbnail,
+  videoId,
+}: {
+  thumbnail?: string | null;
+  videoId?: string | null;
+}): string {
+  if (isValidHttpUrl(thumbnail)) {
+    return thumbnail;
+  }
+
+  if (isValidVideoId(videoId)) {
+    return `https://i.ytimg.com/vi/${encodeURIComponent(
+      videoId.trim()
+    )}/hqdefault.jpg`;
+  }
+
+  return "https://picsum.photos/200";
 }
 
 export default function Player() {
   const playerRef = useRef<HTMLVideoElement>(null);
-  const [isReady, setIsReady] = useState(false);
+
+  const [readyPlayerUrl, setReadyPlayerUrl] = useState<string | null>(null);
 
   const {
     currentSong,
@@ -48,59 +99,84 @@ export default function Player() {
     cycleRepeatMode,
   } = useAudioStore();
 
-  const playerUrl = useMemo(() => {
-    return currentSong?.videoId ? `https://www.youtube.com/watch?v=${currentSong.videoId}` : "";
-  }, [currentSong?.videoId]);
+  const videoId = currentSong?.videoId;
+
+  const playerUrl = isValidVideoId(videoId)
+    ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId.trim())}`
+    : "";
+
+  const artworkUrl = getArtworkUrl({
+    thumbnail: currentSong?.thumbnail,
+    videoId,
+  });
+
+  const isReady = Boolean(playerUrl) && readyPlayerUrl === playerUrl;
 
   useEffect(() => {
-    setIsReady(false);
-  }, [playerUrl]);
-
-  useEffect(() => {
-    if (seekTarget !== null && playerRef.current && isReady) {
-      playerRef.current.currentTime = seekTarget;
-      if (isPlaying) {
-        void playerRef.current.play().catch(() => undefined);
-      }
-      clearSeekTarget();
+    if (seekTarget === null || !playerRef.current || !isReady) {
+      return;
     }
-  }, [seekTarget, isReady, clearSeekTarget]);
 
-  const isClient = typeof window !== "undefined";
-  const playerConfig = {
-    youtube: {
-      playerVars: {
-        autoplay: 1,
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        iv_load_policy: 3,
-      },
-    },
-  } as any;
+    playerRef.current.currentTime = seekTarget;
+
+    if (isPlaying) {
+      void playerRef.current.play().catch(() => undefined);
+    }
+
+    clearSeekTarget();
+  }, [seekTarget, isReady, isPlaying, clearSeekTarget]);
 
   return (
-    <footer className="z-50 shrink-0 border-t border-zinc-800 bg-[#181818] px-6 py-4">
-      <div className="pointer-events-none absolute -left-px -top-px size-px overflow-hidden opacity-0">
-        {isClient && playerUrl && (
+    <footer className="relative z-50 shrink-0 border-t border-zinc-800 bg-[#181818] px-6 py-4">
+      <div className="pointer-events-none absolute -top-px -left-px size-px overflow-hidden opacity-0">
+        {playerUrl && (
           <ReactPlayer
             key={playerUrl}
             ref={playerRef}
             src={playerUrl}
             playing={isPlaying}
+            controls={false}
+            playsInline
             muted={isMuted}
             volume={isMuted ? 0 : volume / 100}
             onReady={() => {
-              setIsReady(true);
+              console.log("Player ready:", playerUrl);
+              setReadyPlayerUrl(playerUrl);
+
               const playerDuration = playerRef.current?.duration;
-              if (playerDuration && Number.isFinite(playerDuration)) {
+
+              if (
+                typeof playerDuration === "number" &&
+                Number.isFinite(playerDuration) &&
+                playerDuration > 0
+              ) {
                 setDuration(playerDuration);
               }
             }}
+            onPlay={() => {
+              console.log("Playback started");
+            }}
+            onPause={() => {
+              console.log("Playback paused");
+            }}
+            onError={(error) => {
+              console.error("React Player error:", error);
+            }}
             onEnded={next}
-            onDurationChange={(event) => setDuration(event.currentTarget.duration)}
-            onTimeUpdate={(event) => setProgress(event.currentTarget.currentTime)}
-            config={playerConfig}
+            onDurationChange={(event) => {
+              const nextDuration = event.currentTarget.duration;
+
+              if (Number.isFinite(nextDuration)) {
+                setDuration(nextDuration);
+              }
+            }}
+            onTimeUpdate={(event) => {
+              const nextProgress = event.currentTarget.currentTime;
+
+              if (Number.isFinite(nextProgress)) {
+                setProgress(nextProgress);
+              }
+            }}
           />
         )}
       </div>
@@ -109,22 +185,30 @@ export default function Player() {
         <PlayerInfo
           title={currentSong?.title ?? "Choose a playlist"}
           artist={currentSong?.artist ?? "Your next favorite song"}
-          artwork={currentSong?.thumbnail || "https://picsum.photos/200"}
-          favoriteControl={currentSong ? (
-            <FavoriteButton
-              song={{
-                title: currentSong.title,
-                artist: currentSong.artist,
-                youtubeId: currentSong.videoId,
-              }}
-            />
-          ) : null}
+          artwork={artworkUrl}
+          favoriteControl={
+            currentSong && isValidVideoId(currentSong.videoId) ? (
+              <FavoriteButton
+                song={{
+                  title: currentSong.title,
+                  artist: currentSong.artist,
+                  youtubeId: currentSong.videoId,
+                }}
+              />
+            ) : null
+          }
         />
 
         <div className="flex flex-col items-center gap-3">
           <PlayerControls
             playing={isPlaying}
-            onToggle={() => (isPlaying ? pause() : play())}
+            onToggle={() => {
+              if (isPlaying) {
+                pause();
+              } else {
+                play();
+              }
+            }}
             onNext={next}
             onPrevious={previous}
             shuffleEnabled={isShuffleEnabled}
@@ -133,25 +217,25 @@ export default function Player() {
             onCycleRepeatMode={cycleRepeatMode}
           />
 
-          <ProgressBar
-            current={progress}
-            duration={duration}
-            onSeek={(value) => seek(value)}
-          />
+          <ProgressBar current={progress} duration={duration} onSeek={seek} />
         </div>
 
         <div className="flex justify-end">
           <VolumeControl
             volume={volume}
             isMuted={isMuted}
-            onVolumeChange={(value) => setVolume(value)}
-            onToggleMute={() => setMuted(!isMuted)}
+            onVolumeChange={setVolume}
+            onToggleMute={() => {
+              setMuted(!isMuted);
+            }}
           />
         </div>
       </div>
 
-      <div className="mt-3 text-center text-[11px] uppercase tracking-[0.3em] text-zinc-500">
-        {currentSong ? `${formatTime(progress)} / ${formatTime(duration)}` : "No track selected"}
+      <div className="mt-3 text-center text-[11px] tracking-[0.3em] text-zinc-500 uppercase">
+        {currentSong
+          ? `${formatTime(progress)} / ${formatTime(duration)}`
+          : "No track selected"}
       </div>
     </footer>
   );

@@ -3,11 +3,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export type GeneratePlaylistResponse = {
-  success: boolean;
-  playlist?: GeneratedPlaylist;
-  message?: string;
-};
 import { useAudioStore } from "@/stores/audioStore";
 import { generatePlaylist } from "@/lib/services/playlist-generation-client";
 import GeneratePromptForm from "./generate-prompt";
@@ -37,7 +32,7 @@ export default function MusicMoodGeneratePage() {
       router.push(`/playing?playlist=${playlistParam}`);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Something went wrong.",
+        error instanceof Error ? error.message : "Something went wrong."
       );
     } finally {
       setIsLoading(false);
