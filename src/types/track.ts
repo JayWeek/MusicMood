@@ -10,5 +10,7 @@ export default interface track {
   // Optional fields
   liked?: boolean;
   source?: string;
+  youtubeId?: string;
+  videoId?: string;
   playedAt?: string;
 }

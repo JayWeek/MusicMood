@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Heart, Play } from "lucide-react";
+import { Play } from "lucide-react";
+import FavoriteButton from "@/components/favorites/FavoriteButton";
 import Track from "@/types/track";
 
 interface TrackRowProps {
@@ -51,14 +52,15 @@ export default function TrackRow({
       <div className="col-span-4 text-zinc-400">{track.album}</div>
 
       <div className="col-span-1">
-        <button onClick={() => onLike?.(track)}>
-          <Heart
-            size={18}
-            className={
-              track.liked ? "fill-green-500 text-green-500" : "text-zinc-500"
-            }
-          />
-        </button>
+        <FavoriteButton
+          song={{
+            title: track.title,
+            artist: track.artist,
+            youtubeId: track.youtubeId ?? track.videoId ?? String(track.id),
+          }}
+          initialLiked={track.liked}
+          onChange={(liked) => onLike?.({ ...track, liked })}
+        />
       </div>
 
       {showPlayedAt ? (

@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "picsum.photos",
       },
+      {
+        protocol: "https",
+        hostname: "://ytimg.com",
+        pathname: "/vi/**",
+      },
+      {
+        protocol: "https",
+        hostname: "://youtube.com",
+        pathname: "/vi/**",
+      },
     ],
   },
 };
