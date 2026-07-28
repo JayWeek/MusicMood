@@ -90,10 +90,10 @@ const MoodPromptList = ({
             Made for your mood
           </p>
 
-          <h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">
-            {selectedMood
-              ? `${selectedMood} listening ideas`
-              : "Listening ideas"}
+          <h2
+            className={`mt-1 text-xl font-bold text-white sm:text-2xl ${selectedMood} ? capitalize`}
+          >
+            {`${selectedMood} Listening ideas`}
           </h2>
         </div>
 

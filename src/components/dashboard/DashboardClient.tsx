@@ -1,53 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
-import GenerateButton from "@/components/dashboard/GenerateButton";
-import LoadingAI from "@/components/dashboard/LoadingAI";
-import MoodChips from "@/components/dashboard/MoodChips";
-import PromptBox from "@/components/dashboard/PromptBox";
-import PlaylistHeader from "@/components/playlist/PlayListHeader";
-import { mockTracks } from "@/lib/mockTracks";
+import MoodDiscovery from "../home/mood-discovery";
+import type { GeneratedMoodPrompt } from "../home/mood-prompt-list";
+import { SUPPORTED_MOODS } from "@/lib/constants/supported-moods";
+
+interface RandomPromptsResponse {
+  randomPrompts: GeneratedMoodPrompt[];
+}
 
 export default function DashboardClient() {
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [generated, setGenerated] = useState(false);
+  const [defaultPrompts, setDefaultPrompts] = useState<GeneratedMoodPrompt[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  async function generatePlaylist() {
-    if (!prompt) return;
+  useEffect(() => {
+    const controller = new AbortController();
 
-    setLoading(true);
+    async function loadDefaultPrompts() {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+        const randomIndex = Math.floor(Math.random() * SUPPORTED_MOODS.length);
+        const randomMood = SUPPORTED_MOODS[randomIndex];
 
-    setLoading(false);
-    setGenerated(true);
-  }
+        const response = await fetch("/api/playlists/random", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mood: randomMood,
+          }),
+          signal: controller.signal,
+          cache: "no-store",
+        });
+
+        const data = (await response.json()) as
+          | RandomPromptsResponse
+          | { message?: string };
+
+        if (!response.ok) {
+          throw new Error(
+            "message" in data && data.message
+              ? data.message
+              : "Unable to generate default prompts."
+          );
+        }
+
+        if (!("randomPrompts" in data) || !Array.isArray(data.randomPrompts)) {
+          throw new Error("The server returned invalid prompt data.");
+        }
+
+        setDefaultPrompts(data.randomPrompts);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Failed to load default prompts:", error);
+
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Unable to generate default prompts."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadDefaultPrompts();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      {!generated ? (
-        <DashboardSkeleton />
-      ) : (
-        <>
-          <PromptBox value={prompt} onChange={setPrompt} />
-
-          <MoodChips onSelect={setPrompt} />
-
-          <GenerateButton loading={loading} onClick={generatePlaylist} />
-
-          {loading && <LoadingAI />}
-
-          <PlaylistHeader
-            title="Late Night Coding"
-            totalSongs={mockTracks.length}
-            duration="2h 18m"
-            generatedBy="AI"
-          />
-        </>
-      )}
+    <div>
+      <MoodDiscovery
+        isDefaultError={Boolean(error)}
+        defaultPrompts={defaultPrompts}
+        isLoadingDefaultPrompts={isLoading}
+      />
     </div>
   );
 }

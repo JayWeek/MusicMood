@@ -18,6 +18,7 @@ interface RandomPromptsResponse {
 interface MoodDiscoveryProps {
   defaultPrompts: GeneratedMoodPrompt[];
   isLoadingDefaultPrompts?: boolean;
+  isDefaultError?: boolean;
 }
 
 const DEFAULT_ERROR_MESSAGE =
@@ -71,28 +72,33 @@ function getApiErrorMessage(value: unknown): string {
     return response.message;
   }
 
+  if (typeof response.error === "string" && response.error.trim().length > 0) {
+    return response.error;
+  }
+
   return DEFAULT_ERROR_MESSAGE;
 }
 
 export default function MoodDiscovery({
   defaultPrompts,
   isLoadingDefaultPrompts = false,
+  isDefaultError = false,
 }: MoodDiscoveryProps) {
   const [selectedMood, setSelectedMood] = useState<MoodItem | null>(null);
 
-  // Initially display the prompts generated for the random default mood.
-  // The parent loads defaultPrompts asynchronously. Display them when ready,
-  // unless the user has already selected another mood.
-  const [prompts, setPrompts] = useState<GeneratedMoodPrompt[]>(() =>
-    selectedMood ? [] : defaultPrompts
-  );
+  // Contains only prompts generated after the user selects a mood.
+  const [generatedPrompts, setGeneratedPrompts] = useState<
+    GeneratedMoodPrompt[]
+  >([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDefaultErrorOpen, setIsDefaultErrorOpen] = useState(isDefaultError);
 
   const requestController = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
 
+  // Cancel any active request when the component unmounts.
   useEffect(() => {
     return () => {
       requestController.current?.abort();
@@ -100,6 +106,7 @@ export default function MoodDiscovery({
   }, []);
 
   const generatePrompts = useCallback(async (mood: MoodItem) => {
+    // Cancel the previous request when another mood is selected.
     requestController.current?.abort();
 
     const controller = new AbortController();
@@ -110,7 +117,7 @@ export default function MoodDiscovery({
 
     setIsLoading(true);
     setError(null);
-    setPrompts([]);
+    setGeneratedPrompts([]);
 
     try {
       const response = await fetch("/api/playlists/random", {
@@ -141,13 +148,12 @@ export default function MoodDiscovery({
         throw new Error("The server returned invalid prompt data.");
       }
 
-      // Ignore an older request if another mood was selected afterward.
+      // Ignore this response if a newer request exists.
       if (requestId !== requestIdRef.current) {
         return;
       }
 
-      // Replace the previous mood's prompts with the new prompts.
-      setPrompts(data.randomPrompts);
+      setGeneratedPrompts(data.randomPrompts);
     } catch (error: unknown) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
@@ -179,8 +185,7 @@ export default function MoodDiscovery({
         requestController.current = null;
         requestIdRef.current += 1;
 
-        // Restore the initial random mood prompts.
-        setPrompts(defaultPrompts);
+        setGeneratedPrompts([]);
         setIsLoading(false);
 
         return;
@@ -188,7 +193,7 @@ export default function MoodDiscovery({
 
       void generatePrompts(mood);
     },
-    [defaultPrompts, generatePrompts]
+    [generatePrompts]
   );
 
   const handlePromptClick = useCallback(
@@ -229,9 +234,23 @@ export default function MoodDiscovery({
     void generatePrompts(selectedMood);
   }, [generatePrompts, isLoading, selectedMood]);
 
-  const displayedMood = selectedMood?.label ?? prompts.at(0)?.moods.at(0);
+  // Before a mood is selected, use the asynchronously loaded
+  // default prompts directly from the parent.
+  const visiblePrompts = selectedMood ? generatedPrompts : defaultPrompts;
 
-  const showLoading = isLoading || (!selectedMood && isLoadingDefaultPrompts);
+  const displayedMood =
+    selectedMood?.label ?? visiblePrompts.at(0)?.moods.at(0);
+
+  const showLoading = selectedMood ? isLoading : isLoadingDefaultPrompts;
+
+  const modalMessage =
+    error ??
+    (isDefaultErrorOpen ? "Unable to load the default playlist ideas." : "");
+
+  const handleCloseError = () => {
+    setError(null);
+    setIsDefaultErrorOpen(false);
+  };
 
   return (
     <>
@@ -239,7 +258,7 @@ export default function MoodDiscovery({
         <MoodPicker onMoodChange={handleMoodChange} />
 
         <MoodPromptList
-          prompts={prompts}
+          prompts={visiblePrompts}
           selectedMood={displayedMood}
           isLoading={showLoading}
           onPromptClick={handlePromptClick}
@@ -248,10 +267,10 @@ export default function MoodDiscovery({
       </div>
 
       <AlertModal
-        open={Boolean(error)}
+        open={Boolean(error) || isDefaultErrorOpen}
         title="Unable to generate prompts"
-        message={error ?? ""}
-        onClose={() => setError(null)}
+        message={modalMessage}
+        onClose={handleCloseError}
       />
     </>
   );
