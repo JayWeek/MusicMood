@@ -2,24 +2,26 @@ import NowPlayingClient from "@/components/now-playing/NowPlayingClient";
 import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
 
 type PlayingPageProps = {
-  searchParams?: Promise<{
+  searchParams: Promise<{
     playlist?: string | string[];
   }>;
 };
 
 export default async function Playing({ searchParams }: PlayingPageProps) {
   const resolvedSearchParams = await searchParams;
-  const playlistParam = resolvedSearchParams?.playlist;
-  const rawPlaylist =
-    typeof playlistParam === "string" ? playlistParam : playlistParam?.[0];
+  const playlistParam = resolvedSearchParams.playlist;
+
+  const rawPlaylist = Array.isArray(playlistParam)
+    ? playlistParam[0]
+    : playlistParam;
 
   let playlist: GeneratedPlaylist | null = null;
 
-  if (typeof rawPlaylist === "string") {
+  if (rawPlaylist) {
     try {
-      playlist = JSON.parse(decodeURIComponent(rawPlaylist)) as GeneratedPlaylist;
-    } catch {
-      playlist = null;
+      playlist = JSON.parse(rawPlaylist) as GeneratedPlaylist;
+    } catch (error) {
+      console.error("Unable to parse playlist parameter:", error);
     }
   }
 

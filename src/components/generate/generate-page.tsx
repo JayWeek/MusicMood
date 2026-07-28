@@ -3,6 +3,11 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+export type GeneratePlaylistResponse = {
+  success: boolean;
+  playlist?: GeneratedPlaylist;
+  message?: string;
+};
 import { useAudioStore } from "@/stores/audioStore";
 import { generatePlaylist } from "@/lib/services/playlist-generation-client";
 import GeneratePromptForm from "./generate-prompt";

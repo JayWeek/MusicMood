@@ -2,13 +2,12 @@
 
 import EachTrackInPlaylist from "./EachTrackInPlaylist";
 
-export type currentTrack = {
-  title: string;
-  artist: string;
-  reason: string;
+export type CurrentTrack = PlaylistSong & {
+  reason?: string;
 };
 
-type Props = {
+interface NowPlayingPanelProps {
+  mood: string;
   playing: boolean;
   liked: boolean;
   setPlaying: (val: boolean) => void;
@@ -28,17 +27,18 @@ export default function NowPlayingPanel({
   const safeQueue = queue ?? [];
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 shadow-2xl shadow-black/20">
+    <div className="p-5 shadow-2xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Now Playing</h2>
       </div>
 
-      <div className="mt-5 border-t border-zinc-800 pt-4">
+      <div className="mt-5 pt-4">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">Up Next</h3>
-          {queue && (
-            <span className="text-xs text-zinc-500">{queue?.length}</span>
-          )}
+          <h3 className="text-sm font-semibold text-white">
+            {(mood && mood) || "Up Next"}
+          </h3>
+
+          <span className="text-xs text-zinc-500">{safeQueue.length}</span>
         </div>
 
         <ul className="space-y-2 text-sm text-zinc-400">

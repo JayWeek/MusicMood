@@ -1,5 +1,7 @@
 "use client";
 
+import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
+
 import AIInsightsCard from "./AIInsightsCard";
 import TrackPlayerPreview from "../now-playing/TrackPlayerPreview";
 import { useAudioStore } from "@/stores/audioStore";

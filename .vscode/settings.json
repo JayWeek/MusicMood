@@ -1,0 +1,9 @@
+{
+  "editor.inlineSuggest.enabled": true,
+  "editor.tabSize": 5,
+  "editor.insertSpaces": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 5,
+  "workbench.editor.limit.perEditorGroup": true,
+  "explorer.compactFolders": false
+}
