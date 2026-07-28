@@ -1,12 +1,16 @@
 "use client";
 
+import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
+
 import TrackArtwork from "./TrackArtwork";
-import TrackControls from "./TrackControls";
 import TrackMeta from "./TrackMeta";
 
+type PlaylistSong = GeneratedPlaylist["playlist"]["songs"][number];
+
 interface TrackPlayerPreviewProps {
-  title: string;
-  artist: string;
+  song: PlaylistSong;
+  mood?: string;
+  currentTime?: string;
   playing: boolean;
   liked: boolean;
   onToggle: () => void;
@@ -14,35 +18,27 @@ interface TrackPlayerPreviewProps {
 }
 
 export default function TrackPlayerPreview({
-  title,
-  artist,
+  song,
+  mood = "Focus",
+  currentTime = "0:00",
   playing,
-  liked,
   onToggle,
-  onLike,
 }: TrackPlayerPreviewProps) {
   return (
     <>
       <TrackArtwork
-        title={title}
-        artwork="https://picsum.photos/400"
+        title={song.title}
+        artwork={song.thumbnail}
         playing={playing}
         onToggle={onToggle}
       />
 
       <TrackMeta
-        title={title}
-        artist={artist}
-        mood="Focus"
-        currentTime="1:12"
-        duration="3:24"
-      />
-
-      <TrackControls
-        playing={playing}
-        liked={liked}
-        onToggle={onToggle}
-        onLike={onLike}
+        title={song.title}
+        artist={song.artist}
+        mood={mood}
+        currentTime={currentTime}
+        duration={song.duration}
       />
     </>
   );

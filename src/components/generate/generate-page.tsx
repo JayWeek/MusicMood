@@ -5,7 +5,7 @@ import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
 import GeneratePromptForm from "./generate-prompt";
 import { useRouter } from "next/navigation";
 
-type GeneratePlaylistResponse = {
+export type GeneratePlaylistResponse = {
   success: boolean;
   playlist?: GeneratedPlaylist;
   message?: string;

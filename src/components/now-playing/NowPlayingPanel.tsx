@@ -2,57 +2,69 @@
 
 import { useRouter } from "next/navigation";
 
-import EachTrackInPlaylist from "./EachTrackInPlaylist";
+import EachTrackInPlaylist, { type PlaylistSong } from "./EachTrackInPlaylist";
 
-export type currentTrack = {
-  title: string;
-  artist: string;
-  reason: string;
+export type CurrentTrack = PlaylistSong & {
+  reason?: string;
 };
 
-type Props = {
+interface NowPlayingPanelProps {
+  mood: string;
   playing: boolean;
   liked: boolean;
-  setPlaying: (val: boolean) => void;
-  setLiked: (val: boolean) => void;
-  queue: currentTrack[];
-};
+  queue: CurrentTrack[];
+  activeVideoId?: string;
+  isDefaultQueue?: boolean;
+  onTrackSelect?: (track: CurrentTrack, index: number) => void;
+}
 
-export default function NowPlayingPanel({ liked, playing, queue }: Props) {
+export default function NowPlayingPanel({
+  liked,
+  playing,
+  mood,
+  queue,
+  activeVideoId,
+  isDefaultQueue = false,
+  onTrackSelect,
+}: NowPlayingPanelProps) {
   const router = useRouter();
   const safeQueue = queue ?? [];
 
-  const handleFallbackClick = () => {
-    router.push("/generate");
+  const handleTrackClick = (track: CurrentTrack, index: number) => {
+    if (isDefaultQueue) {
+      router.push("/generate");
+      return;
+    }
+
+    onTrackSelect?.(track, index);
   };
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 shadow-2xl shadow-black/20">
+    <div className="p-5 shadow-2xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Now Playing</h2>
       </div>
 
-      <div className="mt-5 border-t border-zinc-800 pt-4">
+      <div className="mt-5 pt-4">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">Up Next</h3>
-          {queue && (
-            <span className="text-xs text-zinc-500">{queue?.length}</span>
-          )}
+          <h3 className="text-sm font-semibold text-white">
+            {(mood && mood) || "Up Next"}
+          </h3>
+
+          <span className="text-xs text-zinc-500">{safeQueue.length}</span>
         </div>
 
         <ul className="space-y-2 text-sm text-zinc-400">
           {safeQueue.length > 0 ? (
-            safeQueue.map((item) => (
+            safeQueue.map((song, index) => (
               <EachTrackInPlaylist
-                key={item.title}
-                title={item.title}
-                artist={item.artist}
-                playing={playing}
+                key={index}
+                song={song}
+                index={index}
+                playing={playing && song.videoId === activeVideoId}
                 liked={liked}
-                onClick={handleFallbackClick}
-                isDefault={
-                  safeQueue.length > 0 && item.title === "Midnight City"
-                }
+                isDefault={isDefaultQueue}
+                onClick={() => handleTrackClick(song, index)}
               />
             ))
           ) : (

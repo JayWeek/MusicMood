@@ -1,83 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import MoodPicker, { MoodItem } from "./mood-picker";
+import { GeneratePlaylistResponse } from "../generate/generate-page";
 import MoodPromptList, { GeneratedMoodPrompt } from "./mood-prompt-list";
 import AlertModal from "../landing/alert-modal";
-
-interface ApiErrorResponse {
-  error?: string;
-  message?: string;
-}
-
-interface RandomPromptsResponse {
-  randomPrompts: GeneratedMoodPrompt[];
-}
-
-interface MoodDiscoveryProps {
-  defaultPrompts: GeneratedMoodPrompt[];
-  isLoadingDefaultPrompts?: boolean;
-  isDefaultError?: boolean;
-}
-
-const DEFAULT_ERROR_MESSAGE =
-  "Unable to generate mood prompts. Please try again.";
-
-function isGeneratedMoodPrompt(value: unknown): value is GeneratedMoodPrompt {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const prompt = value as Record<string, unknown>;
-
-  return (
-    typeof prompt.prompt === "string" &&
-    prompt.prompt.trim().length > 0 &&
-    typeof prompt.description === "string" &&
-    prompt.description.trim().length > 0 &&
-    Array.isArray(prompt.moods) &&
-    prompt.moods.every((mood) => typeof mood === "string") &&
-    Array.isArray(prompt.artistLike) &&
-    prompt.artistLike.every((artist) => typeof artist === "string")
-  );
-}
-
-function isRandomPromptsResponse(
-  value: unknown
-): value is RandomPromptsResponse {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const response = value as Record<string, unknown>;
-
-  return (
-    Array.isArray(response.randomPrompts) &&
-    response.randomPrompts.every(isGeneratedMoodPrompt)
-  );
-}
-
-function getApiErrorMessage(value: unknown): string {
-  if (typeof value !== "object" || value === null) {
-    return DEFAULT_ERROR_MESSAGE;
-  }
-
-  const response = value as ApiErrorResponse;
-
-  if (
-    typeof response.message === "string" &&
-    response.message.trim().length > 0
-  ) {
-    return response.message;
-  }
-
-  if (typeof response.error === "string" && response.error.trim().length > 0) {
-    return response.error;
-  }
-
-  return DEFAULT_ERROR_MESSAGE;
-}
+import {
+  MoodDiscoveryProps,
+  getApiErrorMessage,
+  isRandomPromptsResponse,
+  DEFAULT_ERROR_MESSAGE,
+} from "./types";
 
 export default function MoodDiscovery({
   defaultPrompts,
@@ -90,6 +24,9 @@ export default function MoodDiscovery({
   const [generatedPrompts, setGeneratedPrompts] = useState<
     GeneratedMoodPrompt[]
   >([]);
+  const router = useRouter();
+
+  const [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -197,7 +134,11 @@ export default function MoodDiscovery({
   );
 
   const handlePromptClick = useCallback(
-    (selectedPrompt: GeneratedMoodPrompt) => {
+    async (selectedPrompt: GeneratedMoodPrompt) => {
+      if (isGeneratingPlaylist) {
+        return;
+      }
+
       const mood = selectedMood?.id ?? selectedPrompt.moods.at(0);
 
       if (!mood) {
@@ -205,25 +146,54 @@ export default function MoodDiscovery({
         return;
       }
 
-      console.log("Generate playlist using:", {
-        prompt: selectedPrompt.prompt,
-        mood,
-        moods: selectedPrompt.moods,
-        artistLike: selectedPrompt.artistLike,
-      });
+      console.log(mood);
 
-      // Next request:
-      //
-      // POST /api/playlists/generate
-      //
-      // {
-      //   prompt: selectedPrompt.prompt,
-      //   mood,
-      //   moods: selectedPrompt.moods,
-      //   artistLike: selectedPrompt.artistLike
-      // }
+      setIsGeneratingPlaylist(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/playlists/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          // The selected playlist idea already contains the mood.
+          // Additional metadata must be included here for the API if needed.
+          body: JSON.stringify({
+            prompt: selectedPrompt.prompt,
+          }),
+        });
+
+        let data: GeneratePlaylistResponse;
+
+        try {
+          data = (await response.json()) as GeneratePlaylistResponse;
+          console.log(data);
+        } catch {
+          throw new Error("The server returned an invalid response.");
+        }
+
+        if (!response.ok || !data.success || !data.playlist) {
+          throw new Error(
+            data.message ?? "The playlist could not be generated."
+          );
+        }
+
+        const playlistParam = encodeURIComponent(JSON.stringify(data.playlist));
+
+        router.push(`/playing?playlist=${playlistParam}`);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Something went wrong while generating the playlist."
+        );
+      } finally {
+        setIsGeneratingPlaylist(false);
+      }
     },
-    [selectedMood]
+    [isGeneratingPlaylist, router, selectedMood]
   );
 
   const handleRegenerate = useCallback(() => {
@@ -252,6 +222,7 @@ export default function MoodDiscovery({
     setIsDefaultErrorOpen(false);
   };
 
+  const showAnyLoading = showLoading || isGeneratingPlaylist;
   return (
     <>
       <div className="space-y-6 text-white">
@@ -260,9 +231,11 @@ export default function MoodDiscovery({
         <MoodPromptList
           prompts={visiblePrompts}
           selectedMood={displayedMood}
-          isLoading={showLoading}
+          isLoading={showAnyLoading}
           onPromptClick={handlePromptClick}
-          onRegenerate={selectedMood ? handleRegenerate : undefined}
+          onRegenerate={
+            selectedMood && !isGeneratingPlaylist ? handleRegenerate : undefined
+          }
         />
       </div>
 
