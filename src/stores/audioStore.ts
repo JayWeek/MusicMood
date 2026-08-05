@@ -89,6 +89,7 @@ function normalizeSong(song: Partial<PlaylistSong> | undefined): PlaylistSong {
   };
 }
 
+// This function normalizes a playlist input into a consistent PlaylistData structure.
 function normalizePlaylist(
   input: PlaylistInput | null | undefined
 ): PlaylistData | null {
@@ -96,6 +97,8 @@ function normalizePlaylist(
     return null;
   }
 
+
+  // If the input is already a GeneratedPlaylist or PlaylistData, we can use it directly.
   const maybeWrapped = input as PlaylistInput & {
     playlist?: PlaylistData | GeneratedPlaylist | null;
   };
@@ -109,6 +112,8 @@ function normalizePlaylist(
     return null;
   }
 
+
+// We need to handle both PlaylistData and GeneratedPlaylist structures.
   const candidate = source as PlaylistData & {
     songs?: PlaylistSong[];
 
@@ -125,6 +130,7 @@ function normalizePlaylist(
     mood?: string[];
   };
 
+  // Normalize the songs array, supporting both "songs" and "tracks" properties.
   const songs = Array.isArray(candidate.songs)
     ? candidate.songs.map((song) => normalizeSong(song))
     : Array.isArray(candidate.tracks)

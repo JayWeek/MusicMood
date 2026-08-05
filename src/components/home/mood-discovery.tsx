@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import MoodPicker, { MoodItem } from "./mood-picker";
-import { GeneratePlaylistResponse } from "../generate/generate-page";
 import MoodPromptList, { GeneratedMoodPrompt } from "./mood-prompt-list";
+import { useAudioStore } from "@/stores/audioStore";
 import AlertModal from "../landing/alert-modal";
 import {
   MoodDiscoveryProps,
@@ -19,6 +19,7 @@ export default function MoodDiscovery({
   isDefaultError = false,
 }: MoodDiscoveryProps) {
   const [selectedMood, setSelectedMood] = useState<MoodItem | null>(null);
+  const setStorePlaylist = useAudioStore((state) => state.setPlaylist);
 
   // Contains only prompts generated after the user selects a mood.
   const [generatedPrompts, setGeneratedPrompts] = useState<
@@ -157,7 +158,6 @@ export default function MoodDiscovery({
           headers: {
             "Content-Type": "application/json",
           },
-
           // The selected playlist idea already contains the mood.
           // Additional metadata must be included here for the API if needed.
           body: JSON.stringify({
@@ -165,11 +165,15 @@ export default function MoodDiscovery({
           }),
         });
 
-        let data: GeneratePlaylistResponse;
+        if (!response.ok) {
+          throw new Error("Failed to generate playlist.");
+        }
 
+        let data;
         try {
-          data = (await response.json()) as GeneratePlaylistResponse;
+          data = await response.json();
           console.log(data);
+          setStorePlaylist(data.playlist);
         } catch {
           throw new Error("The server returned an invalid response.");
         }
@@ -180,9 +184,7 @@ export default function MoodDiscovery({
           );
         }
 
-        const playlistParam = encodeURIComponent(JSON.stringify(data.playlist));
-
-        router.push(`/playing?playlist=${playlistParam}`);
+        router.push("/playing");
       } catch (error) {
         setError(
           error instanceof Error
@@ -193,7 +195,7 @@ export default function MoodDiscovery({
         setIsGeneratingPlaylist(false);
       }
     },
-    [isGeneratingPlaylist, router, selectedMood]
+    [isGeneratingPlaylist, selectedMood, setStorePlaylist, router]
   );
 
   const handleRegenerate = useCallback(() => {
