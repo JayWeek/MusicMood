@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import MoodPicker, { MoodItem } from "./mood-picker";
-import { GeneratePlaylistResponse } from "../generate/generate-page";
+import type { GeneratePlaylistResponse } from "@/lib/services/playlist-generation-client";
 import MoodPromptList, { GeneratedMoodPrompt } from "./mood-prompt-list";
 import AlertModal from "../landing/alert-modal";
 import {

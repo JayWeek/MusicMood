@@ -1,25 +1,17 @@
-type YouTubeVideoSearchResult = {
-  videoId?: string;
-  thumbnail?: string | { url?: string };
-  duration?: string | number;
-};
-
-type YouTubeSearchResponse = {
-  videos?: YouTubeVideoSearchResult[];
-};
+import type { SearchResult } from "yt-search";
 
 export async function enrichSongsWithYouTube(searchQuery: string) {
-  const ytSearch = (await import("yt-search")).default as (
-    query: string,
-  ) => Promise<YouTubeSearchResponse>;
+  const importedYtSearch = await import("yt-search");
+  const ytSearch = (
+    importedYtSearch as {
+      default: (query: string | { query: string }) => Promise<SearchResult>;
+    }
+  ).default;
 
   const result = await ytSearch(searchQuery);
-  const video = result.videos?.[0] as any; // Cast temporarily or use strict library types
+  const video = result.videos?.[0];
 
-  const thumbnail =
-    typeof video?.thumbnail === "string"
-      ? video.thumbnail
-      : video?.thumbnail?.url ?? "";
+  const thumbnail = typeof video?.thumbnail === "string" ? video.thumbnail : "";
 
   // FIX: Extract the human-readable timestamp from the duration object
   let formattedDuration = "unknown";
