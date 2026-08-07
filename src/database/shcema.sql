@@ -19,9 +19,9 @@ create table public.playlists (
 
     prompt text not null,
 
-    --change prompt column to mood or add a mood column to store the mood of the playlist
+    moods text[] not null, -- add moods column to store the playlist moods
 
-    -- add description column to store the playlist description
+    description text, -- add description column to store the playlist description
 
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 

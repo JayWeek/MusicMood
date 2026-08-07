@@ -3,6 +3,7 @@
 import AIInsightsCard from "./AIInsightsCard";
 import TrackPlayerPreview from "../now-playing/TrackPlayerPreview";
 import { useAudioStore } from "@/stores/audioStore";
+import { PlaylistData } from "@/components/layout/PlaylistData";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds <= 0) {
@@ -49,6 +50,19 @@ export default function RightPanel() {
                 }
               : undefined
           }
+        />
+      </div>
+
+      <PlaylistData
+        moods={playlist?.mood || []}
+        title={playlist?.title || ""}
+        songsLength={playlist?.songs.length || 0}
+      />
+
+      <div className="h-1 rounded-full bg-zinc-800">
+        <div
+          className="h-1 rounded-full bg-green-500"
+          style={{ width: `${(progress / duration) * 100}%` }}
         />
       </div>
 

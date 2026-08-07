@@ -10,8 +10,6 @@ export default function NowPlayingPanel() {
 
   const isPlaying = useAudioStore((state) => state.isPlaying);
 
-  const liked = useAudioStore((state) => state.liked);
-
   const play = useAudioStore((state) => state.play);
 
   const pause = useAudioStore((state) => state.pause);
@@ -53,13 +51,13 @@ export default function NowPlayingPanel() {
       <div className="mt-5 pt-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-white capitalize">
-            {playlist?.mood?.at(0) ?? "Up Next"}
+            {playlist?.title}
           </h3>
 
           <span className="text-xs text-zinc-500">{songs.length}</span>
         </div>
 
-        <ul className="space-y-2 text-sm text-zinc-400">
+        <div className="space-y-2 text-sm text-zinc-400">
           {songs.length > 0 ? (
             songs.map((song, index) => {
               const isActiveSong = index === currentSongIndex;
@@ -70,7 +68,6 @@ export default function NowPlayingPanel() {
                   song={song}
                   index={index}
                   playing={isActiveSong && isPlaying}
-                  liked={isActiveSong && liked}
                   onClick={() => handleTrackClick(index)}
                 />
               );
@@ -80,7 +77,7 @@ export default function NowPlayingPanel() {
               No tracks available yet.
             </li>
           )}
-        </ul>
+        </div>
       </div>
     </div>
   );

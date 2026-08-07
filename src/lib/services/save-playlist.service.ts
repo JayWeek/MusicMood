@@ -7,7 +7,13 @@ import {
 } from "../schema/playlist.schema";
 import { PlaylistSong } from "@/stores/audioStore";
 
-export const saveFullGeneratedPlaylist = async (data: GeneratedPlaylist) => {
+export const saveFullGeneratedPlaylist = async ({
+  data,
+  prompt,
+}: {
+  data: GeneratedPlaylist;
+  prompt: string;
+}) => {
   //validate the data using the schema
   const parsedData = generatedPlaylistSchema.safeParse(data);
   if (!parsedData.success) {
@@ -15,7 +21,7 @@ export const saveFullGeneratedPlaylist = async (data: GeneratedPlaylist) => {
   }
 
   //get data from the parsed data
-  const { title, description, mood, songs } = parsedData.data.playlist;
+const { title, description, mood, songs } = parsedData.data.playlist;
   //get user data from supabase auth
   try {
     const supabase = createClient();
@@ -32,7 +38,8 @@ export const saveFullGeneratedPlaylist = async (data: GeneratedPlaylist) => {
       {
         title,
         description,
-        mood,
+        moods: mood,
+        prompt,
       },
       supabase
     );
@@ -73,13 +80,13 @@ export const saveGeneratedPlaylist = async (
   }
 
   //get data from the parsed data
-  const { title, description, mood } = parsedData.data;
+  const { title, description, moods, prompt } = parsedData.data;
 
   try {
     //since users always generate a random playlist, we can use the title and user id to generate a unique id for the playlist
     const { data: savedPlaylist, error: insertError } = await supabase
       .from("playlists")
-      .insert({ user_id: userId, title, description, mood })
+      .insert({ user_id: userId, title, description, moods, prompt })
       .select("id")
       .single();
 

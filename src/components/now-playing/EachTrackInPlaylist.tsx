@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { Heart, Music2, Pause, Play } from "lucide-react";
+import { Music2, Pause, Play } from "lucide-react";
 import { PlaylistSong } from "@/stores/audioStore";
+import FavoriteButton from "../favorites/FavoriteButton";
 
 interface EachTrackInPlaylistProps {
   song: PlaylistSong;
   index: number;
   playing: boolean;
-  liked: boolean;
   onClick?: () => void;
   isDefault?: PlaylistSong;
 }
@@ -46,13 +46,16 @@ export default function EachTrackInPlaylist({
   song,
   index,
   playing,
-  liked,
   onClick,
 }: EachTrackInPlaylistProps) {
   const artwork = getTrackArtwork(song);
+  const favoriteSong = {
+    title: song.title,
+    artist: song.artist,
+    youtubeId: song.videoId,
+  };
 
   return (
-    <li className="list-none">
       <button
         type="button"
         onClick={onClick}
@@ -98,7 +101,7 @@ export default function EachTrackInPlaylist({
             )}
 
             {artwork && (
-              <div className="absolute inset-0 hidden items-center justify-center bg-black/50 group-hover:flex">
+              <div className="absolute inset-0 hidden items-center justify-center bg-black/50">
                 {playing ? (
                   <Pause
                     className="size-5 fill-white text-white"
@@ -134,16 +137,8 @@ export default function EachTrackInPlaylist({
             {song.duration}
           </span>
 
-          <Heart
-            className={`size-4 transition-colors ${
-              liked
-                ? "fill-[#1ed760] text-[#1ed760]"
-                : "text-[#b3b3b3] group-hover:text-white"
-            }`}
-            aria-label={liked ? "Liked" : "Not liked"}
-          />
+          <FavoriteButton song={favoriteSong} />
         </div>
       </button>
-    </li>
   );
 }
