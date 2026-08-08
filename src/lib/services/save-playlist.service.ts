@@ -21,7 +21,7 @@ export const saveFullGeneratedPlaylist = async ({
   }
 
   //get data from the parsed data
-const { title, description, mood, songs } = parsedData.data.playlist;
+  const { title, description, mood, songs } = parsedData.data.playlist;
   //get user data from supabase auth
   try {
     const supabase = createClient();
@@ -131,6 +131,29 @@ export const saveEachSongInPlaylist = async (
       status: "success",
       message: "Songs saved successfully.",
     };
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Something went wrong."
+    );
+  }
+};
+
+export const getSavedPlaylist = async (userId: string) => {
+  const supabase = createClient();
+  
+  try {
+    const { data: savedPlaylist, error: fetchError } = await supabase
+      .from("playlists")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!savedPlaylist) throw new Error("No saved playlist found.");
+    if (fetchError) throw fetchError;
+
+    return savedPlaylist;
   } catch (error) {
     throw new Error(
       error instanceof Error ? error.message : "Something went wrong."

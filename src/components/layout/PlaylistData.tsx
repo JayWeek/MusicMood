@@ -1,6 +1,6 @@
 import { ListMusic } from "lucide-react";
 import Image from "next/image";
-import { type PlaylistData as PlaylistDataType } from "@/types/playlsit";
+import { type PlaylistData as PlaylistDataType } from "@/types/playlist";
 import Link from "next/link";
 
 type PlaylistInsightProps = {

@@ -1,71 +1,205 @@
 "use client";
 
-import { Play } from "lucide-react";
-import FavoriteButton from "./FavoriteButton";
+import Image from "next/image";
+import { Heart, Pause, Play } from "lucide-react";
+
+import { useAudioStore } from "@/stores/audioStore";
 import FavoriteSong from "@/types/favorite";
 
 interface Props {
   song: FavoriteSong;
   index: number;
-  onFavoriteChange: (liked: boolean) => void;
+  isPlaying?: boolean;
+  onFavoriteChange?: (liked: boolean) => void;
   onPlay?: (song: FavoriteSong) => void;
 }
 
-export default function FavoriteRow({ song, index, onFavoriteChange, onPlay }: Props) {
-  const thumbnailUrl = song.thumbnail || "https://picsum.photos";
+function formatAddedDate(date: string | Date): string {
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
+  const day = parsedDate.getUTCDate();
+
+  const month = parsedDate.toLocaleString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  });
+
+  const year = parsedDate.getUTCFullYear();
+
+  return `${month} ${day}, ${year}`;
+}
+
+export default function FavoriteRow({
+  song,
+  index,
+  isPlaying = false,
+  onFavoriteChange,
+  onPlay,
+}: Props) {
+  const thumbnailUrl = song.thumbnail || "https://picsum.photos/40/40";
+
+  /*
+   * ---------------------------------------------
+   * FAVORITE STATE
+   * ---------------------------------------------
+   */
+
+  const isFavorite = useAudioStore(
+    (state) => state.favoriteStatuses[song.youtubeId] ?? true
+  );
+
+  const isSaving = useAudioStore(
+    (state) => state.favoriteSaving[song.youtubeId] ?? false
+  );
+
+  const toggleFavorite = useAudioStore((state) => state.toggleFavorite);
+
+  /*
+   * ---------------------------------------------
+   * FAVORITE DATA
+   * ---------------------------------------------
+   */
+
+  const favoriteSong = {
+    title: song.title,
+    artist: song.artist,
+    youtubeId: song.youtubeId,
+  };
+
+  /*
+   * ---------------------------------------------
+   * TOGGLE FAVORITE
+   * ---------------------------------------------
+   */
+
+  const handleFavorite = async () => {
+    if (!song.youtubeId || isSaving) {
+      return;
+    }
+
+    try {
+      const liked = await toggleFavorite(favoriteSong);
+
+      onFavoriteChange?.(liked);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
 
   return (
-    <div 
-      className="group grid grid-cols-[40px_4fr_3fr_auto_minmax(120px,auto)] items-center gap-4 rounded-md px-4 py-2 transition duration-150 hover:bg-zinc-800/40"
-    >
-      {/* Aligns track numbers cleanly beneath header sign '#' and displays play arrow on hover */}
-      <div className="relative flex items-center justify-start text-zinc-400 font-normal text-base h-6 w-6 pl-1">
-        <span className="group-hover:opacity-0 block transition-opacity duration-100">{index + 1}</span>
+    <div className="grid w-full grid-cols-[36px_minmax(0,1fr)_auto_auto_auto] items-center gap-4">
+      {/* Track number */}
+
+      <span
+        className={`text-sm tabular-nums ${
+          isPlaying ? "text-[#1ed760]" : "text-zinc-400"
+        }`}
+      >
+        {index + 1}
+      </span>
+
+      {/* Track information */}
+
+      <div className="flex min-w-0 items-center gap-4">
+        {/* Thumbnail / Play button */}
+
         <button
           type="button"
           onClick={() => onPlay?.(song)}
-          className="absolute left-1 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 group-hover:opacity-100 text-white transition-opacity duration-100"
+          aria-label={
+            isPlaying
+              ? `Pause ${song.title} by ${song.artist}`
+              : `Play ${song.title} by ${song.artist}`
+          }
+          className="group/thumbnail relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-800 shadow focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
         >
-          <Play size={14} fill="currentColor" />
-        </button>
-      </div>
-
-      {/* Track info containing the generated image thumbnail instead of music icon */}
-      <div className="flex items-center gap-4 min-w-0">
-        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-zinc-800 shadow">
-          <img
+          <Image
             src={thumbnailUrl}
-            alt={song.title}
+            alt={`${song.title} artwork`}
+            width={40}
+            height={40}
             className="h-full w-full object-cover"
             loading="lazy"
           />
-        </div>
 
-        <div className="truncate pr-4">
-          <h3 className="truncate text-white text-base font-normal mb-0.5 leading-tight">{song.title}</h3>
-          <p className="truncate text-sm text-zinc-400 font-normal">{song.artist}</p>
+          <div
+            className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${
+              isPlaying
+                ? "opacity-100"
+                : "opacity-0 group-hover/thumbnail:opacity-100"
+            }`}
+          >
+            {isPlaying ? (
+              <Pause
+                className="size-4 fill-white text-white"
+                aria-hidden="true"
+              />
+            ) : (
+              <Play
+                className="size-4 fill-white text-white"
+                aria-hidden="true"
+              />
+            )}
+          </div>
+        </button>
+
+        {/* Title / Artist */}
+
+        <div className="min-w-0 truncate pr-4">
+          <h3
+            className={`mb-0.5 truncate text-base leading-tight font-normal ${
+              isPlaying ? "text-[#1ed760]" : "text-white"
+            }`}
+          >
+            {song.title}
+          </h3>
+
+          <p className="truncate text-sm font-normal text-zinc-400">
+            {song.artist}
+          </p>
         </div>
       </div>
 
-      {/* Collection Details */}
-      <div className="truncate text-sm text-zinc-400 font-normal">Saved song</div>
+      {/* Collection */}
 
-      {/* Like Heart Trigger */}
+      <div className="truncate text-sm font-normal text-zinc-400">
+        Saved song
+      </div>
+
+      {/* Favorite */}
+
       <div className="flex items-center justify-center px-2">
-        <FavoriteButton
-          song={{ title: song.title, artist: song.artist, youtubeId: song.youtubeId }}
-          initialLiked
-          onChange={onFavoriteChange}
-        />
+        <button
+          type="button"
+          onClick={() => void handleFavorite()}
+          disabled={isSaving}
+          aria-label={
+            isFavorite
+              ? `Remove ${song.title} from favorites`
+              : `Add ${song.title} to favorites`
+          }
+          aria-pressed={isFavorite}
+          className="transition disabled:cursor-wait disabled:opacity-50"
+        >
+          <Heart
+            size={18}
+            className={
+              isFavorite
+                ? "fill-green-500 text-green-500"
+                : "text-zinc-500 hover:text-white"
+            }
+          />
+        </button>
       </div>
 
-      {/* Calendar Timestamp Alignment */}
-      <div className="text-right text-sm text-zinc-400 font-normal pr-4">
-        {new Date(song.createdAt).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })}
+      {/* Date added */}
+
+      <div className="pr-4 text-right text-sm font-normal text-zinc-400">
+        {formatAddedDate(song.createdAt)}
       </div>
     </div>
   );

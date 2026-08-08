@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { Heart } from "lucide-react";
 
 import { useAudioStore } from "@/stores/audioStore";
-import FavoriteButton from "@/components/favorites/FavoriteButton";
 import PlayerInfo from "../player/PlayerInfo";
 import PlayerControls from "../player/PlayerControls";
 import ProgressBar from "../player/ProgressBar";
@@ -71,8 +71,14 @@ function getArtworkUrl({
 }
 
 export default function Player() {
-  const playerRef = useRef<HTMLVideoElement>(null);
+  /**
+   * ReactPlayer's underlying media element.
+   */
+  const playerRef = useRef<HTMLVideoElement | null>(null);
 
+  /**
+   * Tracks which player URL has finished loading.
+   */
   const [readyPlayerUrl, setReadyPlayerUrl] = useState<string | null>(null);
 
   const {
@@ -83,35 +89,76 @@ export default function Player() {
     duration,
     isMuted,
     seekTarget,
+
     play,
     pause,
     next,
     previous,
     seek,
+
     setVolume,
     setProgress,
     setDuration,
     setMuted,
     clearSeekTarget,
+
     isShuffleEnabled,
     repeatMode,
     toggleShuffle,
     cycleRepeatMode,
+
+    /**
+     * Favorites are now completely controlled
+     * by the audio store.
+     */
+    favoriteStatuses,
+    favoriteSaving,
+    toggleCurrentFavorite,
   } = useAudioStore();
 
+  /**
+   * Current song information.
+   */
   const videoId = currentSong?.videoId;
 
+  /**
+   * YouTube player URL.
+   */
   const playerUrl = isValidVideoId(videoId)
     ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId.trim())}`
     : "";
 
+  /**
+   * Artwork used by PlayerInfo.
+   */
   const artworkUrl = getArtworkUrl({
     thumbnail: currentSong?.thumbnail,
     videoId,
   });
 
+  /**
+   * Player is ready when the current URL
+   * matches the URL ReactPlayer reported as ready.
+   */
   const isReady = Boolean(playerUrl) && readyPlayerUrl === playerUrl;
 
+  /**
+   * Current favorite status comes directly
+   * from Zustand.
+   *
+   * This means:
+   *
+   * Player -> favoriteStatuses
+   * FavoriteRow -> favoriteStatuses
+   * PlaylistRow -> favoriteStatuses
+   *
+   * They all share the same source of truth.
+   */
+  const isFavorite = videoId ? (favoriteStatuses[videoId] ?? false) : false;
+
+  /**
+   * Synchronize seeking with ReactPlayer.
+   */
   useEffect(() => {
     if (seekTarget === null || !playerRef.current || !isReady) {
       return;
@@ -139,8 +186,11 @@ export default function Player() {
             playsInline
             muted={isMuted}
             volume={isMuted ? 0 : volume / 100}
+            width={0}
+            height={0}
             onReady={() => {
               console.log("Player ready:", playerUrl);
+
               setReadyPlayerUrl(playerUrl);
 
               const playerDuration = playerRef.current?.duration;
@@ -181,24 +231,41 @@ export default function Player() {
         )}
       </div>
 
+      {/* Main player layout */}
       <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
+        {/* Left: Current song */}
         <PlayerInfo
           title={currentSong?.title ?? "Choose a playlist"}
           artist={currentSong?.artist ?? "Your next favorite song"}
           artwork={artworkUrl}
           favoriteControl={
             currentSong && isValidVideoId(currentSong.videoId) ? (
-              <FavoriteButton
-                song={{
-                  title: currentSong.title,
-                  artist: currentSong.artist,
-                  youtubeId: currentSong.videoId,
+              <button
+                type="button"
+                onClick={() => {
+                  void toggleCurrentFavorite();
                 }}
-              />
+                disabled={favoriteSaving[currentSong.videoId] ?? false}
+                aria-label={
+                  isFavorite ? "Remove from favorites" : "Add to favorites"
+                }
+                aria-pressed={isFavorite}
+                className="transition disabled:cursor-wait disabled:opacity-50"
+              >
+                <Heart
+                  size={18}
+                  className={
+                    isFavorite
+                      ? "fill-green-500 text-green-500"
+                      : "text-zinc-500 hover:text-white"
+                  }
+                />
+              </button>
             ) : null
           }
         />
 
+        {/* Center: Playback controls */}
         <div className="flex flex-col items-center gap-3">
           <PlayerControls
             playing={isPlaying}
@@ -220,6 +287,7 @@ export default function Player() {
           <ProgressBar current={progress} duration={duration} onSeek={seek} />
         </div>
 
+        {/* Right: Volume */}
         <div className="flex justify-end">
           <VolumeControl
             volume={volume}
@@ -232,6 +300,7 @@ export default function Player() {
         </div>
       </div>
 
+      {/* Time */}
       <div className="mt-3 text-center text-[11px] tracking-[0.3em] text-zinc-500 uppercase">
         {currentSong
           ? `${formatTime(progress)} / ${formatTime(duration)}`

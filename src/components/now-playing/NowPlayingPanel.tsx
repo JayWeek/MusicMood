@@ -37,17 +37,11 @@ export default function NowPlayingPanel() {
       return;
     }
 
-    // selectSong updates currentSong/currentSongIndex
-    // and sets isPlaying to true.
     selectSong(index);
   };
 
   return (
-    <div className="p-5 shadow-2xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Now Playing</h2>
-      </div>
-
+    <div>
       <div className="mt-5 pt-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-white capitalize">
@@ -64,7 +58,7 @@ export default function NowPlayingPanel() {
 
               return (
                 <EachTrackInPlaylist
-                  key={index}
+                  key={`${song.videoId}-${index}`}
                   song={song}
                   index={index}
                   playing={isActiveSong && isPlaying}
@@ -73,9 +67,9 @@ export default function NowPlayingPanel() {
               );
             })
           ) : (
-            <li className="rounded-lg bg-zinc-950/50 px-3 py-3 text-sm text-zinc-500">
+            <div className="rounded-lg bg-zinc-950/50 px-3 py-3 text-sm text-zinc-500">
               No tracks available yet.
-            </li>
+            </div>
           )}
         </div>
       </div>
