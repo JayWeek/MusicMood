@@ -91,7 +91,7 @@ export default function FavoriteRow({
   };
 
   return (
-    <div className="grid w-full grid-cols-[36px_minmax(0,1fr)_auto_auto_auto] items-center gap-4">
+    <div className="grid w-full grid-cols-[36px_minmax(0,1fr)_auto_auto_auto] items-center gap-4 rounded-b-sm p-2 hover:bg-zinc-800/50">
       {/* Track number */}
 
       <span

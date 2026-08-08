@@ -93,7 +93,7 @@ export default function EachTrackInPlaylist({
   };
 
   return (
-    <>
+    <div className="flex items-center gap-3 rounded p-2 px-2 py-2 hover:bg-zinc-800/50">
       {/* Track number */}
       <span
         className={`text-sm tabular-nums ${
@@ -178,6 +178,6 @@ export default function EachTrackInPlaylist({
           size={16}
         />
       </div>
-    </>
+    </div>
   );
 }

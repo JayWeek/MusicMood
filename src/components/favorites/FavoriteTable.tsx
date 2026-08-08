@@ -55,7 +55,7 @@ export default function FavoriteTable({ songs }: Props) {
       </div>
 
       {/* Favorite Songs */}
-      <div className="flex flex-col gap-1">
+      <div className="my-5 flex flex-col gap-5">
         {favoriteSongs.map((song, index) => {
           const songIsPlaying = isPlaying && playingSongId === song.id;
 
