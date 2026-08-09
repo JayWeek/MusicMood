@@ -50,7 +50,7 @@ const menuItems = [
 
 export default function Sidebar() {
   const path = usePathname();
-  const { playlists, isLoading, error } = usePlaylists();
+  const { savedPlaylists, isLoading, error } = usePlaylists();
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-800 bg-black md:flex">
       {/* Logo */}
@@ -89,7 +89,7 @@ export default function Sidebar() {
         </div>
 
         <RenderPlaylistView
-          data={playlists}
+          data={savedPlaylists}
           isLoading={isLoading}
           isError={!!error}
         />

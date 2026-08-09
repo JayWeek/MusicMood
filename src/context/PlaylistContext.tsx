@@ -12,14 +12,15 @@ import {
   getSavedPlaylist,
   saveFullGeneratedPlaylist,
 } from "@/lib/services/save-playlist.service";
-import { PlaylistData } from "@/types/playlist";
-import { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
+
+import { SavedPlaylist } from "@/types/playlist";
+import { PlaylistData } from "@/stores/audioStore";
 
 interface PlaylistContextValue {
-  playlists: PlaylistData[];
+  savedPlaylists: SavedPlaylist[];
   isLoading: boolean;
   error: string | null;
-  savePlaylist: (data: GeneratedPlaylist, prompt: string) => Promise<void>;
+  savePlaylist: (playlist: PlaylistData) => Promise<void>;
   refreshPlaylists: () => Promise<void>;
 }
 
@@ -28,7 +29,7 @@ const PlaylistContext = createContext<PlaylistContextValue | null>(null);
 interface PlaylistProviderProps {
   children: ReactNode;
   userId: string;
-  initialPlaylists: PlaylistData[];
+  initialPlaylists: SavedPlaylist[];
 }
 
 export function PlaylistProvider({
@@ -36,19 +37,25 @@ export function PlaylistProvider({
   userId,
   initialPlaylists,
 }: PlaylistProviderProps) {
-  const [playlists, setPlaylists] = useState<PlaylistData[]>(initialPlaylists);
+  const [savedPlaylists, setSavedPlaylists] =
+    useState<SavedPlaylist[]>(initialPlaylists);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshPlaylists = useCallback(async () => {
+    if (!userId) {
+      setSavedPlaylists([]);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
       const data = await getSavedPlaylist(userId);
 
-      setPlaylists(data);
+      setSavedPlaylists(data);
     } catch (error) {
       console.error("Failed to fetch playlists:", error);
       setError("Failed to load playlists.");
@@ -58,12 +65,17 @@ export function PlaylistProvider({
   }, [userId]);
 
   const savePlaylist = useCallback(
-    async (data: GeneratedPlaylist, prompt: string) => {
+    async (playlist: PlaylistData) => {
       try {
         setIsLoading(true);
         setError(null);
-        await saveFullGeneratedPlaylist({ data, prompt });
-        await refreshPlaylists();
+
+        await saveFullGeneratedPlaylist(playlist);
+
+        // Get the latest playlists after saving
+        const data = await getSavedPlaylist(userId);
+
+        setSavedPlaylists(data);
       } catch (error) {
         console.error("Failed to save playlist:", error);
         setError("Failed to save playlist.");
@@ -71,13 +83,13 @@ export function PlaylistProvider({
         setIsLoading(false);
       }
     },
-    [refreshPlaylists]
+    [userId]
   );
 
   return (
     <PlaylistContext.Provider
       value={{
-        playlists,
+        savedPlaylists,
         isLoading,
         error,
         refreshPlaylists,

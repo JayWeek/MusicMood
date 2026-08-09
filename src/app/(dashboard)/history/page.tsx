@@ -1,11 +1,15 @@
 "use client";
 
 import HistoryHeader from "@/components/history/HistoryHeader";
+import MoodPromptListSkeleton from "@/components/home/PromptRowSkeleton";
 import FavouritePlaylistTable from "@/components/playlist/FavouritePlaylistTable";
 import { usePlaylists } from "@/context/PlaylistContext";
 
 export default function HistoryPage() {
   const { playlists, isLoading, refreshPlaylists } = usePlaylists();
+  if (isLoading) {
+    return <MoodPromptListSkeleton />;
+  }
 
   return (
     <div className="mx-auto max-w-7xl">

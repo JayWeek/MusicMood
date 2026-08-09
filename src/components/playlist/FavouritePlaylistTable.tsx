@@ -21,17 +21,19 @@ export default function FavouritePlaylistTable({
   return (
     <table className="w-full">
       <thead>
-        <tr className="border-b border-zinc-800 text-left text-sm text-zinc-400">
-          <th className="w-12 px-4 py-3">#</th>
+        <tr className="border-b border-zinc-800 text-sm text-zinc-400">
+          <th className="px-4 py-3 text-left font-medium">#</th>
 
-          <th className="px-4 py-3">Title</th>
+          <th className="px-4 py-3 text-left font-medium">Title</th>
 
-          <th className="px-4 py-3">Description</th>
+          <th className="px-4 py-3 text-left font-medium">Description</th>
 
-          <th className="px-4 py-3">Favorite</th>
+          <th className="px-4 py-3 text-left font-medium">Moods</th>
 
-          <th className="px-4 py-3 text-right">
-            {showPlayedAt ? "Last Played" : "Created"}
+          <th className="px-4 py-3 text-left font-medium">Prompts</th>
+
+          <th className="px-4 py-3 text-right font-medium">
+            {showPlayedAt ? "Last Played" : "Added At"}
           </th>
         </tr>
       </thead>
@@ -43,8 +45,10 @@ export default function FavouritePlaylistTable({
           ))
         ) : playlists.length === 0 ? (
           <tr>
-            <td colSpan={5}>
-              <FavouritePlaylistEmptyState />
+            <td colSpan={6} className="px-0">
+              <div className="flex w-full justify-center">
+                <FavouritePlaylistEmptyState />
+              </div>
             </td>
           </tr>
         ) : (

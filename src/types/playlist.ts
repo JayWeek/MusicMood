@@ -1,4 +1,4 @@
-export type PlaylistData = {
+export type SavedPlaylist = {
   playlistId: string;
   prompt: string;
   title: string;

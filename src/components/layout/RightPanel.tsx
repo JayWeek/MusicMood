@@ -4,6 +4,7 @@ import AIInsightsCard from "./AIInsightsCard";
 import TrackPlayerPreview from "../now-playing/TrackPlayerPreview";
 import { useAudioStore } from "@/stores/audioStore";
 import { AboutPlaylistRightSide } from "../playlist/AboutPlaylistRightSide";
+import { usePlaylists } from "@/context/PlaylistContext";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds <= 0) {
@@ -26,6 +27,15 @@ export default function RightPanel() {
   const progress = useAudioStore((state) => state.progress);
   const duration = useAudioStore((state) => state.duration);
   const playlist = useAudioStore((state) => state.playlist);
+  const { savePlaylist, isLoading, error, savedPlaylists } = usePlaylists();
+
+  const handleSavePlaylist = async () => {
+    console.log("Button clicked");
+    if (!playlist) return;
+
+    console.log("Fetching");
+    await savePlaylist(playlist);
+  };
 
   if (!currentSong) {
     return;
@@ -54,6 +64,11 @@ export default function RightPanel() {
       </div>
 
       <AboutPlaylistRightSide
+        savedPlaylists={savedPlaylists}
+        error={error}
+        isSaving={isLoading}
+        playlist={playlist}
+        onplaylistSave={handleSavePlaylist}
         moods={playlist?.mood || []}
         title={playlist?.title || ""}
         songsLength={playlist?.songs.length || 0}

@@ -1,56 +1,49 @@
 import { createClient } from "@/lib/supabase/client";
-import {
-  generatedPlaylistSchema,
-  GeneratedPlaylist,
-  savePlaylistRequestSchema,
-  SavePlaylistData,
-} from "../schema/playlist.schema";
-import { PlaylistSong } from "@/stores/audioStore";
-import { PlaylistDataType, PlaylistData } from "@/types/playlist";
+import { PlaylistData, PlaylistSong } from "@/stores/audioStore";
+import { PlaylistDataType, SavedPlaylist } from "@/types/playlist";
 
-export const saveFullGeneratedPlaylist = async ({
-  data,
-  prompt,
-}: {
-  data: GeneratedPlaylist;
-  prompt: string;
-}) => {
-  //validate the data using the schema
-  const parsedData = generatedPlaylistSchema.safeParse(data);
-  if (!parsedData.success) {
-    throw new Error("Invalid playlist data");
-  }
-
-  //get data from the parsed data
-  const { title, description, mood, songs } = parsedData.data.playlist;
-  //get user data from supabase auth
+/**
+ * Save a complete generated playlist.
+ *
+ * Flow:
+ * 1. Get the currently authenticated user
+ * 2. Save the playlist
+ * 3. Save all songs belonging to that playlist
+ * 4. Return the playlist ID and redirect URL
+ */
+export const saveFullGeneratedPlaylist = async (playlist: PlaylistData) => {
   try {
     const supabase = createClient();
-    const { data: userData, error: authError } = await supabase.auth.getUser();
-    if (authError) throw authError;
-    if (!userData)
-      throw new Error("Please sign in to save favorite playlists.");
 
-    //get user id
-    const userId = userData.user?.id;
-    //saved generated playlist to supabase
+    // Get authenticated user
+    const { data: userData, error: authError } = await supabase.auth.getUser();
+
+    if (authError) {
+      throw authError;
+    }
+
+    if (!userData.user) {
+      throw new Error("Please sign in to save playlists.");
+    }
+
+    const userId = userData.user.id;
+
+    // Save playlist
     const savedPlaylist = await saveGeneratedPlaylist(
       userId,
-      {
-        title,
-        description,
-        moods: mood,
-        prompt,
-      },
+      playlist,
       supabase
     );
 
-    if (!savedPlaylist.playlistId) throw new Error("Failed to save playlist.");
+    if (!savedPlaylist.playlistId) {
+      throw new Error("Failed to save playlist.");
+    }
 
-    //save each song in the playlist to supabase
+    // Save songs
     const savedSongs = await saveEachSongInPlaylist(
       savedPlaylist.playlistId,
-      songs
+      playlist.songs,
+      supabase
     );
 
     if (savedSongs.status !== "success") {
@@ -60,7 +53,7 @@ export const saveFullGeneratedPlaylist = async ({
     return {
       message: "Playlist and songs saved successfully.",
       playlistId: savedPlaylist.playlistId,
-      redirectUrl: `/playing?playlist/${savedPlaylist.playlistId}`,
+      redirectUrl: `/playing?playlist=${savedPlaylist.playlistId}`,
     };
   } catch (error) {
     throw new Error(
@@ -69,36 +62,41 @@ export const saveFullGeneratedPlaylist = async ({
   }
 };
 
+/**
+ * Save the generated playlist to the playlists table.
+ */
 export const saveGeneratedPlaylist = async (
   userId: string,
-  data: SavePlaylistData,
-  supabase: ReturnType<typeof createClient> = createClient()
-): Promise<{ message: string; playlistId: string }> => {
-  //validate the data using the schema
-  const parsedData = savePlaylistRequestSchema.safeParse(data);
-  if (!parsedData.success) {
-    throw new Error("Invalid playlist data");
-  }
-
-  //get data from the parsed data
-  const { title, description, moods, prompt } = parsedData.data;
-
+  playlist: PlaylistData,
+  supabase: ReturnType<typeof createClient>
+): Promise<{
+  message: string;
+  playlistId: string;
+}> => {
   try {
-    //since users always generate a random playlist, we can use the title and user id to generate a unique id for the playlist
     const { data: savedPlaylist, error: insertError } = await supabase
       .from("playlists")
-      .insert({ user_id: userId, title, description, moods, prompt })
+      .insert({
+        user_id: userId,
+        title: playlist.title,
+        description: playlist.description,
+        moods: playlist.mood,
+        prompt: playlist.title,
+      })
       .select("id")
       .single();
 
-    //if the playlist was not saved, throw an error
-    if (!savedPlaylist) throw new Error("Failed to save playlist.");
-    if (insertError) throw insertError;
+    if (insertError) {
+      throw insertError;
+    }
 
-    //return a success message and redirect url to the client
+    if (!savedPlaylist) {
+      throw new Error("Failed to save playlist.");
+    }
+
     return {
       message: "Playlist saved successfully.",
-      playlistId: savedPlaylist?.id,
+      playlistId: savedPlaylist.id,
     };
   } catch (error) {
     throw new Error(
@@ -107,26 +105,42 @@ export const saveGeneratedPlaylist = async (
   }
 };
 
+/**
+ * Save all songs belonging to a playlist.
+ */
 export const saveEachSongInPlaylist = async (
   playlistId: string,
   songs: PlaylistSong[],
-  supabase: ReturnType<typeof createClient> = createClient()
+  supabase: ReturnType<typeof createClient>
 ) => {
   try {
+    if (songs.length === 0) {
+      return {
+        status: "success",
+        message: "No songs to save.",
+      };
+    }
+
+    const songsToInsert = songs.map((song, index) => ({
+      playlist_id: playlistId,
+      title: song.title,
+      artist: song.artist,
+      youtube_id: song.videoId,
+      position: index + 1,
+    }));
+
     const { data: savedSongs, error: insertError } = await supabase
       .from("playlist_songs")
-      .insert(
-        songs.map((song) => ({
-          playlist_id: playlistId,
-          title: song.title,
-          artist: song.artist,
-          youtube_id: song.videoId,
-          position: songs.indexOf(song) + 1, // Position starts from 1
-        }))
-      );
+      .insert(songsToInsert)
+      .select();
 
-    if (!savedSongs) throw new Error("Failed to save songs.");
-    if (insertError) throw insertError;
+    if (insertError) {
+      throw insertError;
+    }
+
+    if (!savedSongs) {
+      throw new Error("Failed to save songs.");
+    }
 
     return {
       status: "success",
@@ -139,24 +153,33 @@ export const saveEachSongInPlaylist = async (
   }
 };
 
+/**
+ * Get all saved playlists belonging to a user.
+ */
 export const getSavedPlaylist = async (
   userId: string
-): Promise<PlaylistData[]> => {
+): Promise<SavedPlaylist[]> => {
   const supabase = createClient();
 
   try {
-    const { data: savedPlaylist, error: fetchError } = await supabase
+    const { data: savedPlaylists, error: fetchError } = await supabase
       .from("playlists")
       .select("*")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+      .order("created_at", {
+        ascending: false,
+      });
 
-    if (!savedPlaylist) throw new Error("No saved playlist found.");
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      throw fetchError;
+    }
 
-    return savedPlaylist.map((playlist: PlaylistDataType) => ({
+    // No playlists is a valid state, not an error.
+    if (!savedPlaylists) {
+      return [];
+    }
+
+    return savedPlaylists.map((playlist: PlaylistDataType) => ({
       playlistId: playlist.id,
       createdAt: playlist.created_at,
       title: playlist.title,
@@ -165,6 +188,62 @@ export const getSavedPlaylist = async (
       description: playlist.description,
     }));
   } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Something went wrong."
+    );
+  }
+};
+
+export const getPlaylistById = async (
+  playlistId: string
+): Promise<PlaylistData | null> => {
+  const supabase = await createClient();
+
+  try {
+    // Fetch playlist
+    const { data: playlist, error: playlistError } = await supabase
+      .from("playlists")
+      .select("title, description, moods")
+      .eq("id", playlistId)
+      .single();
+
+    if (playlistError) {
+      throw playlistError;
+    }
+
+    if (!playlist) {
+      return null;
+    }
+
+    // Fetch all songs belonging to the playlist
+    const { data: songs, error: songsError } = await supabase
+      .from("playlist_songs")
+      .select("*")
+      .eq("playlist_id", playlistId)
+      .order("position", { ascending: true });
+
+    if (songsError) {
+      throw songsError;
+    }
+
+    //error here need to fix palylist songs table
+    return {
+      title: playlist.title,
+      description: playlist.description ?? undefined,
+      mood: playlist.moods ?? undefined,
+      songs: (songs ?? []).map(
+        (song): PlaylistSong => ({
+          title: song.title,
+          artist: song.artist,
+          videoId: song.youtube_id,
+          duration: song.youtube_id,
+          thumbnail: song.youtube_id,
+        })
+      ),
+    };
+  } catch (error) {
+    console.error("Failed to fetch playlist:", error);
+
     throw new Error(
       error instanceof Error ? error.message : "Something went wrong."
     );

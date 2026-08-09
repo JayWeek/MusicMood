@@ -1,6 +1,6 @@
 import { ListMusic } from "lucide-react";
 import Image from "next/image";
-import { type PlaylistData as PlaylistResponse } from "@/types/playlist";
+import { SavedPlaylist } from "@/types/playlist";
 import Link from "next/link";
 
 export function PlaylistDataError() {
@@ -38,32 +38,38 @@ export function EachPlaylist({
   prompt,
   thumbnail,
   description,
-}: PlaylistResponse) {
+}: SavedPlaylist) {
   return (
-    <div className="overflow-hidden rounded-xl bg-zinc-900 transition hover:bg-zinc-800">
-      <input type="hidden" value={playlistId} />
-
-      {thumbnail ? (
-        <Image
-          src={thumbnail}
-          alt={prompt}
-          width={500}
-          height={500}
-          className="h-56 w-full object-cover"
-        />
-      ) : (
-        <div className="h-56 w-full bg-zinc-800" />
-      )}
-
-      <div className="p-4">
-        <div className="mb-2 flex items-center gap-2">
-          <ListMusic size={18} className="text-green-400" />
-          <h3 className="font-semibold text-white">{prompt}</h3>
+    <Link
+      className="h-15 rounded-xl bg-zinc-900 p-0.5 transition hover:bg-zinc-800"
+href={`playlist/:${playlistId}`}    >
+      <div className="flex gap-2">
+        <div>
+          {thumbnail ? (
+            <Image
+              src={thumbnail}
+              alt={prompt}
+              width={15}
+              height={5}
+              className="h-15 w-full object-cover"
+            />
+          ) : (
+            <ListMusic
+              size={18}
+              className="h-15 w-full object-cover text-green-400"
+            />
+          )}
         </div>
 
-        <p className="line-clamp-3 text-sm text-zinc-400">{description}</p>
+        <div className="flex flex-col">
+          <h3 className="text-sm font-semibold text-white">{prompt}</h3>
+
+          <p className="line-clamp-3 text-[10px] text-zinc-400">
+            {description}
+          </p>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -79,7 +85,7 @@ export function FavouritePlaylistEmptySkeleton() {
 }
 
 type RenderPlaylistViewProps = {
-  data?: PlaylistResponse[];
+  data?: SavedPlaylist[];
   isLoading: boolean;
   isError: boolean;
 };
@@ -101,7 +107,7 @@ export default function RenderPlaylistViewInSideBar({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid-row-1 sm:grid-row-2 xl:grid-row-3 grid gap-6">
       {data.map((playlist) => (
         <EachPlaylist key={playlist.playlistId} {...playlist} />
       ))}

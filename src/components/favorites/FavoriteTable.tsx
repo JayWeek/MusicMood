@@ -40,22 +40,29 @@ export default function FavoriteTable({ songs }: Props) {
   }
 
   return (
-    <div className="w-full">
+    <table className="w-full table-fixed">
       {/* Table Header */}
-      <div className="grid grid-cols-[48px_minmax(0,1fr)_160px_60px_140px] items-center gap-4 border-b border-zinc-800 px-3 py-3 text-sm text-zinc-400">
-        <span>#</span>
+      <thead>
+        <tr className="border-b border-zinc-800 text-left text-sm text-zinc-400">
+          {/* # */}
+          <th className="w-12 px-4 py-3 font-normal">#</th>
 
-        <span>Title</span>
+          {/* Title */}
+          <th className="px-4 py-3 font-normal">Title</th>
 
-        <span>Collection</span>
+          {/* Collection */}
+          <th className="w-[22%] px-4 py-3 font-normal">Collection</th>
 
-        <span />
+          {/* Status */}
+          <th className="w-20 px-4 py-3 text-center font-normal">Status</th>
 
-        <span className="pr-4 text-right">Added</span>
-      </div>
+          {/* Added */}
+          <th className="w-32 px-4 py-3 pr-4 text-right font-normal">Added</th>
+        </tr>
+      </thead>
 
       {/* Favorite Songs */}
-      <div className="my-5 flex flex-col gap-5">
+      <tbody>
         {favoriteSongs.map((song, index) => {
           const songIsPlaying = isPlaying && playingSongId === song.id;
 
@@ -80,7 +87,7 @@ export default function FavoriteTable({ songs }: Props) {
             />
           );
         })}
-      </div>
-    </div>
+      </tbody>
+    </table>
   );
 }

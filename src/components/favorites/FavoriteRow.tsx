@@ -43,9 +43,9 @@ export default function FavoriteRow({
   const thumbnailUrl = song.thumbnail || "https://picsum.photos/40/40";
 
   /*
-   * ---------------------------------------------
+   * -------------------
    * FAVORITE STATE
-   * ---------------------------------------------
+   * -------------------
    */
 
   const isFavorite = useAudioStore(
@@ -59,9 +59,9 @@ export default function FavoriteRow({
   const toggleFavorite = useAudioStore((state) => state.toggleFavorite);
 
   /*
-   * ---------------------------------------------
+   * -------------------
    * FAVORITE DATA
-   * ---------------------------------------------
+   * -------------------
    */
 
   const favoriteSong = {
@@ -71,9 +71,9 @@ export default function FavoriteRow({
   };
 
   /*
-   * ---------------------------------------------
+   * -------------------
    * TOGGLE FAVORITE
-   * ---------------------------------------------
+   * -------------------
    */
 
   const handleFavorite = async () => {
@@ -91,116 +91,126 @@ export default function FavoriteRow({
   };
 
   return (
-    <div className="grid w-full grid-cols-[36px_minmax(0,1fr)_auto_auto_auto] items-center gap-4 rounded-b-sm p-2 hover:bg-zinc-800/50">
+    <tr>
       {/* Track number */}
 
-      <span
-        className={`text-sm tabular-nums ${
-          isPlaying ? "text-[#1ed760]" : "text-zinc-400"
-        }`}
-      >
-        {index + 1}
-      </span>
+      <td className="w-12 px-4">
+        <span
+          className={`text-sm tabular-nums ${
+            isPlaying ? "text-[#1ed760]" : "text-zinc-400"
+          }`}
+        >
+          {index + 1}
+        </span>
+      </td>
 
       {/* Track information */}
 
-      <div className="flex min-w-0 items-center gap-4">
-        {/* Thumbnail / Play button */}
+      <td className="px-4 py-3">
+        <div className="flex min-w-0 items-center gap-4">
+          {/* Thumbnail / Play button */}
 
-        <button
-          type="button"
-          onClick={() => onPlay?.(song)}
-          aria-label={
-            isPlaying
-              ? `Pause ${song.title} by ${song.artist}`
-              : `Play ${song.title} by ${song.artist}`
-          }
-          className="group/thumbnail relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-800 shadow focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
-        >
-          <Image
-            src={thumbnailUrl}
-            alt={`${song.title} artwork`}
-            width={40}
-            height={40}
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
-
-          <div
-            className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${
+          <button
+            type="button"
+            onClick={() => onPlay?.(song)}
+            aria-label={
               isPlaying
-                ? "opacity-100"
-                : "opacity-0 group-hover/thumbnail:opacity-100"
-            }`}
+                ? `Pause ${song.title} by ${song.artist}`
+                : `Play ${song.title} by ${song.artist}`
+            }
+            className="group/thumbnail relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-800 shadow focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
           >
-            {isPlaying ? (
-              <Pause
-                className="size-4 fill-white text-white"
-                aria-hidden="true"
-              />
-            ) : (
-              <Play
-                className="size-4 fill-white text-white"
-                aria-hidden="true"
-              />
-            )}
+            <Image
+              src={thumbnailUrl}
+              alt={`${song.title} artwork`}
+              width={40}
+              height={40}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+
+            <div
+              className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${
+                isPlaying
+                  ? "opacity-100"
+                  : "opacity-0 group-hover/thumbnail:opacity-100"
+              }`}
+            >
+              {isPlaying ? (
+                <Pause
+                  className="size-4 fill-white text-white"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Play
+                  className="size-4 fill-white text-white"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+          </button>
+
+          {/* Title / Artist */}
+
+          <div className="min-w-0 truncate pr-4">
+            <h3
+              className={`mb-0.5 truncate text-base leading-tight font-normal ${
+                isPlaying ? "text-[#1ed760]" : "text-white"
+              }`}
+            >
+              {song.title}
+            </h3>
+
+            <p className="truncate text-sm font-normal text-zinc-400">
+              {song.artist}
+            </p>
           </div>
-        </button>
-
-        {/* Title / Artist */}
-
-        <div className="min-w-0 truncate pr-4">
-          <h3
-            className={`mb-0.5 truncate text-base leading-tight font-normal ${
-              isPlaying ? "text-[#1ed760]" : "text-white"
-            }`}
-          >
-            {song.title}
-          </h3>
-
-          <p className="truncate text-sm font-normal text-zinc-400">
-            {song.artist}
-          </p>
         </div>
-      </div>
+      </td>
 
       {/* Collection */}
 
-      <div className="truncate text-sm font-normal text-zinc-400">
-        Saved song
-      </div>
+      <td className="px-4">
+        <div className="truncate text-sm font-normal text-zinc-400">
+          Saved song
+        </div>
+      </td>
 
-      {/* Favorite */}
+      {/* Status */}
 
-      <div className="flex items-center justify-center px-2">
-        <button
-          type="button"
-          onClick={() => void handleFavorite()}
-          disabled={isSaving}
-          aria-label={
-            isFavorite
-              ? `Remove ${song.title} from favorites`
-              : `Add ${song.title} to favorites`
-          }
-          aria-pressed={isFavorite}
-          className="transition disabled:cursor-wait disabled:opacity-50"
-        >
-          <Heart
-            size={18}
-            className={
+      <td className="px-4">
+        <div className="flex items-center justify-center">
+          <button
+            type="button"
+            onClick={() => void handleFavorite()}
+            disabled={isSaving}
+            aria-label={
               isFavorite
-                ? "fill-green-500 text-green-500"
-                : "text-zinc-500 hover:text-white"
+                ? `Remove ${song.title} from favorites`
+                : `Add ${song.title} to favorites`
             }
-          />
-        </button>
-      </div>
+            aria-pressed={isFavorite}
+            className="transition disabled:cursor-wait disabled:opacity-50"
+          >
+            <Heart
+              size={18}
+              className={
+                isFavorite
+                  ? "fill-green-500 text-green-500"
+                  : "text-zinc-500 hover:text-white"
+              }
+            />
+          </button>
+        </div>
+      </td>
 
       {/* Date added */}
 
-      <div className="pr-4 text-right text-sm font-normal text-zinc-400">
-        {formatAddedDate(song.createdAt)}
-      </div>
-    </div>
+      <td className="px-4 text-right">
+        <div className="pr-4 text-right text-sm font-normal text-zinc-400">
+          {formatAddedDate(song.createdAt)}
+        </div>
+      </td>
+    </tr>
   );
 }

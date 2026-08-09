@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { PlaylistData } from "@/types/playlist";
-import FavoriteButtonPlaylist from "../favorites/FavoriteButtonPlaylist";
+import FavoriteButtonPlaylist from "./FavoriteButtonPlaylist";
 
 interface TrackRowProps {
   playlistData: PlaylistData;
