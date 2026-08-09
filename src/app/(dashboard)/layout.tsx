@@ -23,7 +23,9 @@ export default async function DashboardLayout({
 
   return (
     <Suspense fallback={null}>
-      <DashboardClientLayout name={name}>{children}</DashboardClientLayout>
+      <DashboardClientLayout userData={{ name, id: user?.id || "" }}>
+        {children}
+      </DashboardClientLayout>
     </Suspense>
   );
 }

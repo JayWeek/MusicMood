@@ -6,6 +6,7 @@ import {
   SavePlaylistData,
 } from "../schema/playlist.schema";
 import { PlaylistSong } from "@/stores/audioStore";
+import { PlaylistDataType, PlaylistData } from "@/types/playlist";
 
 export const saveFullGeneratedPlaylist = async ({
   data,
@@ -138,9 +139,11 @@ export const saveEachSongInPlaylist = async (
   }
 };
 
-export const getSavedPlaylist = async (userId: string) => {
+export const getSavedPlaylist = async (
+  userId: string
+): Promise<PlaylistData[]> => {
   const supabase = createClient();
-  
+
   try {
     const { data: savedPlaylist, error: fetchError } = await supabase
       .from("playlists")
@@ -153,7 +156,14 @@ export const getSavedPlaylist = async (userId: string) => {
     if (!savedPlaylist) throw new Error("No saved playlist found.");
     if (fetchError) throw fetchError;
 
-    return savedPlaylist;
+    return savedPlaylist.map((playlist: PlaylistDataType) => ({
+      playlistId: playlist.id,
+      createdAt: playlist.created_at,
+      title: playlist.title,
+      moods: playlist.moods,
+      prompt: playlist.prompt,
+      description: playlist.description,
+    }));
   } catch (error) {
     throw new Error(
       error instanceof Error ? error.message : "Something went wrong."

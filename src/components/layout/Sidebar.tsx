@@ -11,7 +11,8 @@ import {
   ListMusic,
 } from "lucide-react";
 import LogOutBtn from "../auth/LogoutBtn";
-import RenderPlaylistView from "@/components/layout/PlaylistData";
+import RenderPlaylistView from "@/components/playlist/PlaylistData";
+import { usePlaylists } from "@/context/PlaylistContext";
 
 const menuItems = [
   {
@@ -49,6 +50,7 @@ const menuItems = [
 
 export default function Sidebar() {
   const path = usePathname();
+  const { playlists, isLoading, error } = usePlaylists();
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-800 bg-black md:flex">
       {/* Logo */}
@@ -86,7 +88,11 @@ export default function Sidebar() {
           <span className="font-medium">Your Library</span>
         </div>
 
-        <RenderPlaylistView data={[]} isLoading={false} isError={false} />
+        <RenderPlaylistView
+          data={playlists}
+          isLoading={isLoading}
+          isError={!!error}
+        />
       </div>
 
       <div className="mt-auto w-full border-t border-zinc-800 p-4">

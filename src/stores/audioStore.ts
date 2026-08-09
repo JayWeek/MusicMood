@@ -77,41 +77,14 @@ type AudioState = {
   /* =====================================================
    * FAVORITES
    * =================================================== */
-
-  /**
-   * Legacy value.
-   *
-   * Kept so existing components that still use `liked`
-   * don't immediately break.
-   */
   liked: boolean;
 
-  /**
-   * Favorite status indexed by YouTube ID.
-   *
-   * Example:
-   *
-   * {
-   *   "abc123": true,
-   *   "xyz456": false
-   * }
-   */
   favoriteStatuses: Record<string, boolean>;
 
-  /**
-   * Tracks favorite loading per song.
-   */
   favoriteLoading: Record<string, boolean>;
 
-  /**
-   * Tracks favorite saving per song.
-   */
   favoriteSaving: Record<string, boolean>;
 
-  /**
-   * Used to prevent an old favorite request
-   * from overwriting a newer request.
-   */
   favoriteRequestIds: Record<string, number>;
 
   /* =====================================================
@@ -144,20 +117,14 @@ type AudioActions = {
 
   /* Song selection */
   selectSong: (index: number) => void;
-
   next: () => void;
-
   previous: () => void;
 
   /* Progress */
   seek: (seconds: number) => void;
-
   setVolume: (volume: number) => void;
-
   setProgress: (progress: number) => void;
-
   setDuration: (duration: number) => void;
-
   setMuted: (value: boolean) => void;
 
   /* Legacy */
@@ -171,20 +138,8 @@ type AudioActions = {
   /* =====================================================
    * FAVORITES
    * =================================================== */
-
-  /**
-   * Manually set favorite status.
-   */
   setFavoriteStatus: (youtubeId: string, liked: boolean) => void;
-
-  /**
-   * Load favorite status from database.
-   */
   loadFavoriteStatus: (youtubeId: string) => Promise<boolean>;
-
-  /**
-   * Toggle the currently playing song.
-   */
   toggleCurrentFavorite: () => Promise<boolean>;
 
   /**
@@ -868,7 +823,6 @@ export const useAudioStore = create<AudioState & AudioActions>()(
         set((state) => ({
           favoriteStatuses: {
             ...state.favoriteStatuses,
-
             [youtubeId]: actualLiked,
           },
 

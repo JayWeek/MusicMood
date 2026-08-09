@@ -169,7 +169,6 @@ export default function EachTrackInPlaylist({
       {/* Favorite */}
       <div className="ml-auto">
         <FavoriteButton
-          song={favoriteSong}
           liked={isFavorite}
           loading={isFavoriteSaving}
           onClick={() => {

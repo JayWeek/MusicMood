@@ -3,7 +3,7 @@
 import AIInsightsCard from "./AIInsightsCard";
 import TrackPlayerPreview from "../now-playing/TrackPlayerPreview";
 import { useAudioStore } from "@/stores/audioStore";
-import { PlaylistData } from "@/components/layout/PlaylistData";
+import { AboutPlaylistRightSide } from "../playlist/AboutPlaylistRightSide";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds <= 0) {
@@ -53,7 +53,7 @@ export default function RightPanel() {
         />
       </div>
 
-      <PlaylistData
+      <AboutPlaylistRightSide
         moods={playlist?.mood || []}
         title={playlist?.title || ""}
         songsLength={playlist?.songs.length || 0}
