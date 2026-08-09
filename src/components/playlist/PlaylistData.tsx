@@ -42,8 +42,9 @@ export function EachPlaylist({
   return (
     <Link
       className="h-15 rounded-xl bg-zinc-900 p-0.5 transition hover:bg-zinc-800"
-href={`playlist/:${playlistId}`}    >
-      <div className="flex gap-2">
+      href={`playlist/:${playlistId}`}
+    >
+      <div className="flex">
         <div>
           {thumbnail ? (
             <Image
@@ -61,11 +62,11 @@ href={`playlist/:${playlistId}`}    >
           )}
         </div>
 
-        <div className="flex flex-col">
-          <h3 className="text-sm font-semibold text-white">{prompt}</h3>
+        <div className="flex flex-col justify-center gap-1 px-2 py-1">
+          <h3 className="text-xs font-semibold text-white">{prompt}</h3>
 
-          <p className="line-clamp-3 text-[10px] text-zinc-400">
-            {description}
+          <p className="text-[10px] text-zinc-400">
+            {description.slice(0, 50)} {description.length > 50 ? "..." : ""}
           </p>
         </div>
       </div>

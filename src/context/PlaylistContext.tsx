@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -45,7 +46,6 @@ export function PlaylistProvider({
 
   const refreshPlaylists = useCallback(async () => {
     if (!userId) {
-      setSavedPlaylists([]);
       return;
     }
 
@@ -64,6 +64,20 @@ export function PlaylistProvider({
     }
   }, [userId]);
 
+  /*
+   * Fetch playlists when the dashboard provider mounts.
+   *
+   * The timeout makes sure the async state update happens
+   * after the effect itself has finished.
+   */
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      refreshPlaylists();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [refreshPlaylists]);
+
   const savePlaylist = useCallback(
     async (playlist: PlaylistData) => {
       try {
@@ -72,7 +86,6 @@ export function PlaylistProvider({
 
         await saveFullGeneratedPlaylist(playlist);
 
-        // Get the latest playlists after saving
         const data = await getSavedPlaylist(userId);
 
         setSavedPlaylists(data);

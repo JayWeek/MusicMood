@@ -45,22 +45,28 @@ function DashboardContent({
   console.log("Dashboard saved playlists:", savedPlaylists);
 
   return (
-    <div className="flex min-h-screen min-w-0">
+    <div className="flex h-screen min-w-0 overflow-hidden">
+      {/* Sidebar */}
       <Sidebar />
 
+      {/* Main dashboard column */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Topbar */}
         <Topbar name={userData.name} />
 
-        <section className="min-h-0 min-w-0 flex-1 overflow-y-auto p-6">
+        {/* Scrollable content */}
+        <section className="min-h-0 flex-1 overflow-y-auto p-6">
           {children}
         </section>
 
-        <Player />
+        {/* Player stays at bottom of MAIN column */}
+        <div className="shrink-0">
+          <Player />
+        </div>
       </main>
 
+      {/* Right panel */}
       <RightPanel />
-
-      <Player />
     </div>
   );
 }
