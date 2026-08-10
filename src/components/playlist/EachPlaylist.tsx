@@ -2,14 +2,14 @@
 
 import Image from "next/image";
 import { Play } from "lucide-react";
-import { PlaylistData } from "@/types/playlist";
+import { SavedPlaylist } from "@/types/playlist";
 import FavoriteButtonPlaylist from "./FavoriteButtonPlaylist";
 
 interface TrackRowProps {
-  playlistData: PlaylistData;
+  playlistData: SavedPlaylist;
   showPlayedAt?: boolean;
   index?: number;
-  onPlay?: (playlistData: PlaylistData) => void;
+  onPlay?: (playlistData: SavedPlaylist) => void;
   onLikedClick: (playlistId: string) => Promise<void>;
 }
 
@@ -21,13 +21,11 @@ export default function EachFavouritePlaylistRow({
   onLikedClick,
 }: TrackRowProps) {
   return (
-    <tr className="group border-b border-zinc-800 transition hover:bg-zinc-900/50">
+    <tr className="group text-xs transition hover:bg-zinc-900/50">
       {/* Number / Play */}
       <td className="w-12 px-4">
         <div className="relative flex items-center justify-center">
-          <span className="text-sm text-zinc-400 group-hover:hidden">
-            {index + 1}
-          </span>
+          <span className="text-zinc-400 group-hover:hidden">{index + 1}</span>
 
           <button
             type="button"
@@ -56,17 +54,17 @@ export default function EachFavouritePlaylistRow({
           <div className="min-w-0">
             <h3 className="truncate font-medium">{playlistData.title}</h3>
 
-            <p className="truncate text-sm text-zinc-400">
-              {playlistData.description}
-            </p>
+            <p className="truncate text-zinc-400">{playlistData.description}</p>
           </div>
         </div>
       </td>
 
-      {/* Description */}
-      <td className="px-4 text-zinc-400">{playlistData.description}</td>
+      {/* Moods */}
+      <td className="px-4">
+        <td className="px-4 text-zinc-400">{playlistData.title}</td>
+      </td>
 
-      {/* Favourite */}
+      {/* Favourite Action */}
       <td className="px-4">
         <FavoriteButtonPlaylist
           liked={true}
@@ -76,7 +74,7 @@ export default function EachFavouritePlaylistRow({
       </td>
 
       {/* Date */}
-      <td className="px-4 text-right text-sm text-zinc-400">
+      <td className="px-4 text-right text-zinc-400">
         {showPlayedAt
           ? new Date(playlistData.createdAt).toLocaleDateString()
           : new Date(playlistData.createdAt).toLocaleDateString()}

@@ -1,13 +1,13 @@
-import { PlaylistData } from "@/types/playlist";
+import { SavedPlaylist } from "@/types/playlist";
 import EachFavouritePlaylistRow from "@/components/playlist/EachPlaylist";
 import EachFavouritePlaylistRowSkeleton from "./EachFavouritePlaylistRowSkeleton";
 import FavouritePlaylistEmptyState from "./FavouritePlaylistEmptyState";
 
 interface FavouritePlaylistTableProps {
-  playlists: PlaylistData[];
+  playlists: SavedPlaylist[];
   loading?: boolean;
   showPlayedAt?: boolean;
-  onPlay?: (playlist: PlaylistData) => void;
+  onPlay?: (playlist: SavedPlaylist) => void;
   onLikedClick: (playlistId: string) => Promise<void>;
 }
 
@@ -22,17 +22,15 @@ export default function FavouritePlaylistTable({
     <table className="w-full">
       <thead>
         <tr className="border-b border-zinc-800 text-sm text-zinc-400">
-          <th className="px-4 py-3 text-left font-medium">#</th>
+          <th className="px-1.5 py-2 text-left font-medium">#</th>
 
-          <th className="px-4 py-3 text-left font-medium">Title</th>
+          <th className="px-1.5 py-2 text-left font-medium">Title</th>
 
-          <th className="px-4 py-3 text-left font-medium">Description</th>
+          <th className="px-4 py-2 text-left font-medium sm:px-10">Moods</th>
 
-          <th className="px-4 py-3 text-left font-medium">Moods</th>
+          <th className="px-1.5 py-2 text-left font-medium">Actions</th>
 
-          <th className="px-4 py-3 text-left font-medium">Prompts</th>
-
-          <th className="px-4 py-3 text-right font-medium">
+          <th className="px-1.5 py-2 text-right font-medium">
             {showPlayedAt ? "Last Played" : "Added At"}
           </th>
         </tr>

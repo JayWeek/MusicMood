@@ -91,12 +91,16 @@ export default function FavoriteRow({
   };
 
   return (
-    <tr>
+    <tr
+      className={`group text-xs transition hover:bg-zinc-900/50 ${isPlaying ? "bg-zinc-900" : ""}`}
+    >
+      {/*
+       * -------------------
       {/* Track number */}
 
       <td className="w-12 px-4">
         <span
-          className={`text-sm tabular-nums ${
+          className={`tabular-nums ${
             isPlaying ? "text-[#1ed760]" : "text-zinc-400"
           }`}
         >
@@ -154,16 +158,14 @@ export default function FavoriteRow({
 
           <div className="min-w-0 truncate pr-4">
             <h3
-              className={`mb-0.5 truncate text-base leading-tight font-normal ${
+              className={`mb-0.5 truncate text-xs leading-tight font-normal ${
                 isPlaying ? "text-[#1ed760]" : "text-white"
               }`}
             >
               {song.title}
             </h3>
 
-            <p className="truncate text-sm font-normal text-zinc-400">
-              {song.artist}
-            </p>
+            <p className="truncate font-normal text-zinc-400">{song.artist}</p>
           </div>
         </div>
       </td>
@@ -171,9 +173,7 @@ export default function FavoriteRow({
       {/* Collection */}
 
       <td className="px-4">
-        <div className="truncate text-sm font-normal text-zinc-400">
-          Saved song
-        </div>
+        <div className="truncate font-normal text-zinc-400">Saved song</div>
       </td>
 
       {/* Status */}
@@ -207,7 +207,7 @@ export default function FavoriteRow({
       {/* Date added */}
 
       <td className="px-4 text-right">
-        <div className="pr-4 text-right text-sm font-normal text-zinc-400">
+        <div className="pr-4 text-right font-normal text-zinc-400">
           {formatAddedDate(song.createdAt)}
         </div>
       </td>

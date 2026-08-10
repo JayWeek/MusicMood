@@ -45,19 +45,21 @@ export default function FavoriteTable({ songs }: Props) {
       <thead>
         <tr className="border-b border-zinc-800 text-left text-sm text-zinc-400">
           {/* # */}
-          <th className="w-12 px-4 py-3 font-normal">#</th>
+          <th className="w-12 px-2 py-1.5 font-normal">#</th>
 
           {/* Title */}
-          <th className="px-4 py-3 font-normal">Title</th>
+          <th className="px-2 py-1.5 font-normal">Title</th>
 
           {/* Collection */}
-          <th className="w-[22%] px-4 py-3 font-normal">Collection</th>
+          <th className="w-[22%] px-2 py-1.5 font-normal">Collection</th>
 
           {/* Status */}
-          <th className="w-20 px-4 py-3 text-center font-normal">Status</th>
+          <th className="w-20 px-2 py-1.5 text-center font-normal">Status</th>
 
           {/* Added */}
-          <th className="w-32 px-4 py-3 pr-4 text-right font-normal">Added</th>
+          <th className="w-32 px-2 py-1.5 pr-4 text-right font-normal">
+            Added
+          </th>
         </tr>
       </thead>
 

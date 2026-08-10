@@ -6,7 +6,7 @@ import FavouritePlaylistTable from "@/components/playlist/FavouritePlaylistTable
 import { usePlaylists } from "@/context/PlaylistContext";
 
 export default function HistoryPage() {
-  const { playlists, isLoading, refreshPlaylists } = usePlaylists();
+  const { savedPlaylists, isLoading, refreshPlaylists } = usePlaylists();
   if (isLoading) {
     return <MoodPromptListSkeleton />;
   }
@@ -17,7 +17,7 @@ export default function HistoryPage() {
 
       <div className="mt-8">
         <FavouritePlaylistTable
-          playlists={playlists}
+          playlists={savedPlaylists}
           loading={isLoading}
           onPlay={(playlist) => {
             console.log("Play playlist:", playlist);
