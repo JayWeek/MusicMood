@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// Use native <img> for dynamic artwork to avoid Next image optimizer overhead and external thumbnail timeouts
 import { Music2, Pause, Play } from "lucide-react";
 
 interface TrackArtworkProps {
@@ -70,13 +70,11 @@ export default function TrackArtwork({
   return (
     <div className="group relative aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/60">
       {artworkSource ? (
-        <Image
+        <img
           src={artworkSource}
           alt={`${title} artwork`}
-          fill
-          sizes="320px"
-          priority
-          className="object-cover"
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#1ed760] to-[#063d1b]">

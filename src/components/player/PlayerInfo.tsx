@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// Use native <img> for small player artwork to avoid optimizer overhead
 import type { ReactNode } from "react";
 
 interface PlayerInfoProps {
@@ -18,11 +18,12 @@ export default function PlayerInfo({
 }: PlayerInfoProps) {
   return (
     <div className="flex w-72 items-center gap-4">
-      <Image
+      <img
         src={artwork}
         alt={title}
         width={60}
         height={60}
+        loading="lazy"
         className="h-[60px] w-[60px] rounded-lg object-cover"
       />
 

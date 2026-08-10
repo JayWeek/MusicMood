@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+// Use native <img> for static demo images to reduce Next optimizer work
 import { PlayCircle, Sparkles } from "lucide-react";
 
 export default function Hero() {
@@ -62,11 +62,12 @@ export default function Hero() {
 
             <div className="mb-6 flex items-center gap-4">
 
-              <Image
+              <img
                 src="https://picsum.photos/120"
                 alt="Album"
                 width={96}
                 height={96}
+                loading="lazy"
                 className="h-24 w-24 rounded-xl object-cover"
               />
 

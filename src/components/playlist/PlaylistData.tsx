@@ -1,5 +1,5 @@
 import { ListMusic } from "lucide-react";
-import Image from "next/image";
+// Use native <img> for small playlist thumbnails in sidebar
 import { SavedPlaylist } from "@/types/playlist";
 import Link from "next/link";
 
@@ -10,7 +10,6 @@ export function PlaylistDataError() {
         <ListMusic className="text-red-400" size={18} />
         <h2 className="text-lg font-semibold text-white">Playlist Insight</h2>
       </div>
-
       <p className="text-red-400">Failed to load playlist data.</p>
     </div>
   );
@@ -20,8 +19,7 @@ export function FavouritePlaylistEmpty() {
   return (
     <div className="rounded-xl bg-zinc-900 p-2">
       <p className="text-xs text-zinc-400">
-        You dont have any saved playlists yet generate and save one to see it
-        here.
+        You dont have any saved playlists yet generate and save one to see it here.
       </p>
       <Link
         href="/generate"
@@ -42,16 +40,15 @@ export function EachPlaylist({
   return (
     <Link
       className="h-15 rounded-xl bg-zinc-900 p-0.5 transition hover:bg-zinc-800"
-      href={`playlist/:${playlistId}`}
+      href={`/playing?playlist=${playlistId}`}
     >
       <div className="flex">
         <div>
           {thumbnail ? (
-            <Image
+            <img
               src={thumbnail}
               alt={prompt}
-              width={15}
-              height={5}
+              loading="lazy"
               className="h-15 w-full object-cover"
             />
           ) : (
@@ -64,7 +61,6 @@ export function EachPlaylist({
 
         <div className="flex flex-col justify-center gap-1 px-2 py-1">
           <h3 className="text-xs font-semibold text-white">{prompt}</h3>
-
           <p className="text-[10px] text-zinc-400">
             {description.slice(0, 50)} {description.length > 50 ? "..." : ""}
           </p>
@@ -79,7 +75,6 @@ export function FavouritePlaylistEmptySkeleton() {
     <div className="rounded-xl bg-zinc-900 p-2">
       <div className="h-3 w-full animate-pulse rounded bg-zinc-800" />
       <div className="mt-1 h-3 w-4/5 animate-pulse rounded bg-zinc-800" />
-
       <div className="mt-1 h-3 w-16 animate-pulse rounded bg-zinc-800" />
     </div>
   );

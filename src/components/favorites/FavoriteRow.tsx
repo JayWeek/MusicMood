@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// Use native <img> for small thumbnails to avoid Next image optimizer overhead
 import { Heart, Pause, Play } from "lucide-react";
 
 import { useAudioStore } from "@/stores/audioStore";
@@ -124,13 +124,13 @@ export default function FavoriteRow({
             }
             className="group/thumbnail relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-800 shadow focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
           >
-            <Image
+            <img
               src={thumbnailUrl}
               alt={`${song.title} artwork`}
               width={40}
               height={40}
-              className="h-full w-full object-cover"
               loading="lazy"
+              className="h-full w-full object-cover"
             />
 
             <div

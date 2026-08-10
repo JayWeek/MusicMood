@@ -2,26 +2,23 @@
 
 import { useEffect } from "react";
 import { useAudioStore } from "@/stores/audioStore";
+import type { PlaylistData } from "@/stores/audioStore";
 import NowPlayingPanel from "./NowPlayingPanel";
 
-export default function NowPlayingClient() {
-  // Use store states instead of local useState
+type NowPlayingClientProps = {
+  initialPlaylist?: PlaylistData | null;
+};
+
+export default function NowPlayingClient({
+  initialPlaylist,
+}: NowPlayingClientProps) {
   const setStorePlaylist = useAudioStore((state) => state.setPlaylist);
-  const playlist = useAudioStore((state) => state.playlist);
-  const storedPlaylist = useAudioStore((state) => state.playlist);
 
   useEffect(() => {
-    const incomingSongIds = playlist?.songs.map((song) => song.videoId);
-    const storedSongIds = storedPlaylist?.songs.map((song) => song.videoId);
-
-    if (
-      playlist &&
-      incomingSongIds &&
-      incomingSongIds.join("|") !== storedSongIds?.join("|")
-    ) {
-      setStorePlaylist(playlist);
+    if (initialPlaylist && initialPlaylist.songs.length > 0) {
+      setStorePlaylist(initialPlaylist);
     }
-  }, [playlist, setStorePlaylist, storedPlaylist]);
+  }, [initialPlaylist, setStorePlaylist]);
 
   return <NowPlayingPanel />;
 }

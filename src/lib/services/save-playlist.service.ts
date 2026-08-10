@@ -194,13 +194,22 @@ export const getSavedPlaylist = async (
   }
 };
 
+const buildYouTubeThumbnailUrl = (youtubeId?: string | null): string => {
+  const normalizedId = youtubeId?.trim();
+
+  if (!normalizedId || !/^[A-Za-z0-9_-]{11}$/.test(normalizedId)) {
+    return "";
+  }
+
+  return `https://i.ytimg.com/vi/${normalizedId}/hqdefault.jpg`;
+};
+
 export const getPlaylistById = async (
   playlistId: string
 ): Promise<PlaylistData | null> => {
   const supabase = await createClient();
 
   try {
-    // Fetch playlist
     const { data: playlist, error: playlistError } = await supabase
       .from("playlists")
       .select("title, description, moods")
@@ -215,7 +224,6 @@ export const getPlaylistById = async (
       return null;
     }
 
-    // Fetch all songs belonging to the playlist
     const { data: songs, error: songsError } = await supabase
       .from("playlist_songs")
       .select("*")
@@ -226,24 +234,22 @@ export const getPlaylistById = async (
       throw songsError;
     }
 
-    //error here need to fix palylist songs table
     return {
       title: playlist.title,
       description: playlist.description ?? undefined,
-      mood: playlist.moods ?? undefined,
+      mood: Array.isArray(playlist.moods) ? playlist.moods : [],
       songs: (songs ?? []).map(
         (song): PlaylistSong => ({
           title: song.title,
           artist: song.artist,
-          videoId: song.youtube_id,
-          duration: song.youtube_id,
-          thumbnail: song.youtube_id,
+          videoId: song.youtube_id ?? "",
+          duration: "3:30",
+          thumbnail: buildYouTubeThumbnailUrl(song.youtube_id),
         })
       ),
     };
   } catch (error) {
     console.error("Failed to fetch playlist:", error);
-
     throw new Error(
       error instanceof Error ? error.message : "Something went wrong."
     );
