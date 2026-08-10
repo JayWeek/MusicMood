@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// use native <img> for small thumbnails to avoid Next image optimizer overhead
 import { Music2, Pause, Play } from "lucide-react";
 
 import { PlaylistSong, useAudioStore } from "@/stores/audioStore";
@@ -117,14 +117,15 @@ export default function EachTrackInPlaylist({
           className="group/thumbnail relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-[#1ed760] to-[#063d1b] focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
         >
           {artwork ? (
-            <Image
-              src={artwork}
-              alt={`${song.title} artwork`}
-              width={48}
-              height={48}
-              className="size-full object-cover"
-            />
-          ) : (
+              <img
+                src={artwork}
+                alt={`${song.title} artwork`}
+                width={48}
+                height={48}
+                loading="lazy"
+                className="size-full object-cover"
+              />
+            ) : (
             <Music2 className="size-5 text-black" aria-hidden="true" />
           )}
 

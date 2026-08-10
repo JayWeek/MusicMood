@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// Use native <img> for larger images only where needed; history card images can be lazy-loaded
 import { PlayCircle } from "lucide-react";
 
 interface Props {
@@ -20,11 +20,12 @@ export default function HistoryPlaylistCard({
   return (
     <div className="group rounded-xl bg-zinc-900 p-4 transition hover:bg-zinc-800">
 
-      <Image
+      <img
         src={playlist.cover}
         alt={playlist.title}
         width={300}
         height={300}
+        loading="lazy"
         className="rounded-lg"
       />
 

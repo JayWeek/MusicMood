@@ -1,4 +1,4 @@
-import Image from "next/image";
+// Use native <img> for non-critical playlist cover to avoid optimizer overhead on many requests
 
 interface PlaylistInfoProps {
   title: string;
@@ -10,11 +10,12 @@ export default function PlaylistInfo({
   return (
     <div className="flex flex-col items-center lg:items-start">
 
-      <Image
+      <img
         src="https://picsum.photos/300"
         alt="Playlist Cover"
         width={260}
         height={260}
+        loading="lazy"
         className="rounded-xl shadow-2xl"
       />
 

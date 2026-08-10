@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// Use native <img> for playlist thumbnails in tables for faster rendering
 import { Play } from "lucide-react";
 import { SavedPlaylist } from "@/types/playlist";
 import FavoriteButtonPlaylist from "./FavoriteButtonPlaylist";
@@ -42,11 +42,12 @@ export default function EachFavouritePlaylistRow({
       <td className="px-4 py-3">
         <div className="flex items-center gap-4">
           {playlistData.thumbnail && (
-            <Image
+            <img
               src={playlistData.thumbnail}
               alt={playlistData.title}
               width={50}
               height={50}
+              loading="lazy"
               className="rounded-md object-cover"
             />
           )}
