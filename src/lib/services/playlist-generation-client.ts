@@ -1,6 +1,6 @@
 import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
 
-type GeneratePlaylistResponse = {
+export type GeneratePlaylistResponse = {
   success: boolean;
   playlist?: GeneratedPlaylist;
   message?: string;
