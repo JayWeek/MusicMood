@@ -2,6 +2,16 @@ import { create } from "zustand";
 
 import type { GeneratedPlaylist } from "@/lib/schema/playlist.schema";
 
+import {
+  isFavoriteSong,
+  toggleFavoriteSong,
+  type FavoriteSongInput,
+} from "@/lib/services/favorites";
+
+/* =========================================================
+ * TYPES
+ * ======================================================= */
+
 export type PlaylistSong = {
   title: string;
   artist: string;
@@ -38,53 +48,122 @@ type PlaylistInput =
     };
 
 type AudioState = {
+  /* =====================================================
+   * PLAYLIST
+   * =================================================== */
+
   playlist: PlaylistData | null;
+
   currentSongIndex: number;
+
   currentSong: PlaylistSong | null;
+
+  /* =====================================================
+   * PLAYER
+   * =================================================== */
+
   isPlaying: boolean;
+
   volume: number;
+
   progress: number;
+
   duration: number;
+
   isMuted: boolean;
+
   mood: string;
+
+  /* =====================================================
+   * FAVORITES
+   * =================================================== */
   liked: boolean;
+
+  favoriteStatuses: Record<string, boolean>;
+
+  favoriteLoading: Record<string, boolean>;
+
+  favoriteSaving: Record<string, boolean>;
+
+  favoriteRequestIds: Record<string, number>;
+
+  /* =====================================================
+   * PLAYBACK OPTIONS
+   * =================================================== */
+
   isShuffleEnabled: boolean;
+
   repeatMode: RepeatMode;
+
   seekTarget: number | null;
 };
 
+/* =========================================================
+ * ACTIONS
+ * ======================================================= */
+
 type AudioActions = {
+  /* Playlist */
   setPlaylist: (playlist: PlaylistInput) => void;
 
+  /* Playback */
   play: () => void;
   pause: () => void;
   toggle: () => void;
 
+  /* Shuffle / repeat */
   toggleShuffle: () => void;
   cycleRepeatMode: () => void;
 
+  /* Song selection */
   selectSong: (index: number) => void;
   next: () => void;
   previous: () => void;
 
+  /* Progress */
   seek: (seconds: number) => void;
-
   setVolume: (volume: number) => void;
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
   setMuted: (value: boolean) => void;
+
+  /* Legacy */
   setLiked: (liked: boolean) => void;
 
+  /* Playlist cleanup */
   clearPlaylist: () => void;
+
   clearSeekTarget: () => void;
+
+  /* =====================================================
+   * FAVORITES
+   * =================================================== */
+  setFavoriteStatus: (youtubeId: string, liked: boolean) => void;
+  loadFavoriteStatus: (youtubeId: string) => Promise<boolean>;
+  toggleCurrentFavorite: () => Promise<boolean>;
+
+  /**
+   * Toggle any song.
+   *
+   * Used by FavoriteButton / FavoriteRow / playlist rows.
+   */
+  toggleFavorite: (song: FavoriteSongInput) => Promise<boolean>;
 };
+
+/* =========================================================
+ * NORMALIZATION
+ * ======================================================= */
 
 function normalizeSong(song: Partial<PlaylistSong> | undefined): PlaylistSong {
   return {
     title: song?.title ?? "Untitled Song",
+
     artist: song?.artist ?? "Unknown Artist",
+
     videoId: song?.videoId ?? "",
+
     thumbnail: song?.thumbnail ?? "",
+
     duration: song?.duration ?? "0:00",
   };
 }
@@ -121,7 +200,9 @@ function normalizePlaylist(
     }>;
 
     title?: string;
+
     description?: string;
+
     mood?: string[];
   };
 
@@ -150,52 +231,107 @@ function normalizePlaylist(
   };
 }
 
+/* =========================================================
+ * HELPERS
+ * ======================================================= */
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function isValidVideoId(videoId: string | null | undefined): videoId is string {
+  if (!videoId?.trim()) {
+    return false;
+  }
+
+  return !videoId.trim().toLowerCase().startsWith("unknown");
+}
+
+/* =========================================================
+ * STORE
+ * ======================================================= */
+
 export const useAudioStore = create<AudioState & AudioActions>()(
   (set, get) => ({
+    /* =====================================================
+     * INITIAL STATE
+     * =================================================== */
+
     playlist: null,
+
     currentSongIndex: -1,
+
     currentSong: null,
 
     isPlaying: false,
 
     volume: 70,
+
     progress: 0,
+
     duration: 0,
+
     isMuted: false,
-    liked: false,
+
     mood: "",
 
+    liked: false,
+
+    favoriteStatuses: {},
+
+    favoriteLoading: {},
+
+    favoriteSaving: {},
+
+    favoriteRequestIds: {},
+
     isShuffleEnabled: false,
+
     repeatMode: "off",
 
     seekTarget: null,
+
+    /* =====================================================
+     * PLAYLIST
+     * =================================================== */
 
     setPlaylist: (playlistInput) => {
       const playlist = normalizePlaylist(playlistInput);
 
       const firstSong = playlist?.songs[0] ?? null;
 
+      const cachedFavorite = firstSong
+        ? get().favoriteStatuses[firstSong.videoId]
+        : false;
+
       set({
         playlist,
 
         currentSongIndex: firstSong ? 0 : -1,
-        mood: playlist?.mood?.[0] ?? "",
 
         currentSong: firstSong,
 
-        // Wait for the user to start playback.
+        mood: playlist?.mood?.[0] ?? "",
+
         isPlaying: false,
 
         progress: 0,
+
         duration: 0,
+
         seekTarget: null,
-        liked: false,
+
+        liked: cachedFavorite ?? false,
       });
+
+      if (firstSong && isValidVideoId(firstSong.videoId)) {
+        void get().loadFavoriteStatus(firstSong.videoId);
+      }
     },
+
+    /* =====================================================
+     * PLAYBACK
+     * =================================================== */
 
     play: () => {
       const { currentSong } = get();
@@ -227,9 +363,9 @@ export const useAudioStore = create<AudioState & AudioActions>()(
       }));
     },
 
-    setLiked: (liked) => {
-      set({ liked });
-    },
+    /* =====================================================
+     * SHUFFLE / REPEAT
+     * =================================================== */
 
     toggleShuffle: () => {
       set((state) => ({
@@ -248,6 +384,10 @@ export const useAudioStore = create<AudioState & AudioActions>()(
       }));
     },
 
+    /* =====================================================
+     * SELECT SONG
+     * =================================================== */
+
     selectSong: (index) => {
       const songs = get().playlist?.songs ?? [];
 
@@ -257,23 +397,32 @@ export const useAudioStore = create<AudioState & AudioActions>()(
         return;
       }
 
+      const cachedFavorite = get().favoriteStatuses[song.videoId];
+
       set({
         currentSongIndex: index,
+
         currentSong: song,
 
-        // Start the selected track.
         isPlaying: true,
 
         progress: 0,
+
         duration: 0,
 
-        // Player will seek to zero and call play()
-        // after the new source becomes ready.
         seekTarget: 0,
 
-        liked: false,
+        liked: cachedFavorite ?? false,
       });
+
+      if (isValidVideoId(song.videoId)) {
+        void get().loadFavoriteStatus(song.videoId);
+      }
     },
+
+    /* =====================================================
+     * NEXT
+     * =================================================== */
 
     next: () => {
       const { currentSongIndex, isShuffleEnabled, repeatMode, duration } =
@@ -288,7 +437,9 @@ export const useAudioStore = create<AudioState & AudioActions>()(
       if (repeatMode === "one") {
         set({
           isPlaying: true,
+
           progress: 0,
+
           seekTarget: 0,
         });
 
@@ -300,7 +451,9 @@ export const useAudioStore = create<AudioState & AudioActions>()(
       if (isLastSong && !isShuffleEnabled && repeatMode !== "all") {
         set({
           isPlaying: false,
+
           progress: duration,
+
           seekTarget: null,
         });
 
@@ -320,22 +473,38 @@ export const useAudioStore = create<AudioState & AudioActions>()(
             ? 0
             : currentSongIndex + 1;
 
+      const nextSong = songs[nextIndex] ?? null;
+
+      if (!nextSong) {
+        return;
+      }
+
+      const cachedFavorite = get().favoriteStatuses[nextSong.videoId];
+
       set({
         currentSongIndex: nextIndex,
-        currentSong: songs[nextIndex] ?? null,
+
+        currentSong: nextSong,
 
         isPlaying: true,
 
         progress: 0,
+
         duration: 0,
 
-        // Explicitly start the next song
-        // once its player is ready.
         seekTarget: 0,
 
-        liked: false,
+        liked: cachedFavorite ?? false,
       });
+
+      if (isValidVideoId(nextSong.videoId)) {
+        void get().loadFavoriteStatus(nextSong.videoId);
+      }
     },
+
+    /* =====================================================
+     * PREVIOUS
+     * =================================================== */
 
     previous: () => {
       const { currentSongIndex, progress } = get();
@@ -346,12 +515,12 @@ export const useAudioStore = create<AudioState & AudioActions>()(
         return;
       }
 
-      // If more than three seconds into the song,
-      // restart the current song.
       if (progress > 3) {
         set({
           progress: 0,
+
           isPlaying: true,
+
           seekTarget: 0,
         });
 
@@ -363,30 +532,47 @@ export const useAudioStore = create<AudioState & AudioActions>()(
       if (previousIndex < 0) {
         set({
           progress: 0,
+
           isPlaying: true,
+
           seekTarget: 0,
         });
 
         return;
       }
 
+      const previousSong = songs[previousIndex] ?? null;
+
+      if (!previousSong) {
+        return;
+      }
+
+      const cachedFavorite = get().favoriteStatuses[previousSong.videoId];
+
       set({
         currentSongIndex: previousIndex,
 
-        currentSong: songs[previousIndex] ?? null,
+        currentSong: previousSong,
 
         isPlaying: true,
 
         progress: 0,
+
         duration: 0,
 
-        // Explicitly start the previous song
-        // once its player is ready.
         seekTarget: 0,
 
-        liked: false,
+        liked: cachedFavorite ?? false,
       });
+
+      if (isValidVideoId(previousSong.videoId)) {
+        void get().loadFavoriteStatus(previousSong.videoId);
+      }
     },
+
+    /* =====================================================
+     * SEEK
+     * =================================================== */
 
     seek: (seconds) => {
       const maximum = get().duration || seconds;
@@ -395,9 +581,14 @@ export const useAudioStore = create<AudioState & AudioActions>()(
 
       set({
         progress: nextPosition,
+
         seekTarget: nextPosition,
       });
     },
+
+    /* =====================================================
+     * VOLUME
+     * =================================================== */
 
     setVolume: (volume) => {
       set({
@@ -425,19 +616,295 @@ export const useAudioStore = create<AudioState & AudioActions>()(
       });
     },
 
+    /* =====================================================
+     * LEGACY LIKED
+     * =================================================== */
+
+    setLiked: (liked) => {
+      const currentSong = get().currentSong;
+
+      if (!currentSong?.videoId) {
+        set({
+          liked,
+        });
+
+        return;
+      }
+
+      set((state) => ({
+        liked,
+
+        favoriteStatuses: {
+          ...state.favoriteStatuses,
+
+          [currentSong.videoId]: liked,
+        },
+      }));
+    },
+
+    /* =====================================================
+     * SET FAVORITE STATUS
+     * =================================================== */
+
+    setFavoriteStatus: (youtubeId, liked) => {
+      if (!youtubeId) {
+        return;
+      }
+
+      set((state) => ({
+        favoriteStatuses: {
+          ...state.favoriteStatuses,
+
+          [youtubeId]: liked,
+        },
+
+        liked: state.currentSong?.videoId === youtubeId ? liked : state.liked,
+      }));
+    },
+
+    /* =====================================================
+     * LOAD FAVORITE STATUS
+     * =================================================== */
+
+    loadFavoriteStatus: async (youtubeId) => {
+      if (!isValidVideoId(youtubeId)) {
+        return false;
+      }
+
+      const requestId = Date.now() + Math.random();
+
+      set((state) => ({
+        favoriteLoading: {
+          ...state.favoriteLoading,
+
+          [youtubeId]: true,
+        },
+
+        favoriteRequestIds: {
+          ...state.favoriteRequestIds,
+
+          [youtubeId]: requestId,
+        },
+      }));
+
+      try {
+        const liked = await isFavoriteSong(youtubeId);
+
+        const latestRequestId = get().favoriteRequestIds[youtubeId];
+
+        /*
+         * Don't allow an old request
+         * to overwrite a newer request.
+         */
+        if (latestRequestId !== requestId) {
+          return get().favoriteStatuses[youtubeId] ?? false;
+        }
+
+        set((state) => ({
+          favoriteStatuses: {
+            ...state.favoriteStatuses,
+
+            [youtubeId]: liked,
+          },
+
+          liked: state.currentSong?.videoId === youtubeId ? liked : state.liked,
+
+          favoriteLoading: {
+            ...state.favoriteLoading,
+
+            [youtubeId]: false,
+          },
+        }));
+
+        return liked;
+      } catch (error) {
+        console.error("Error checking favorite status:", error);
+
+        set((state) => ({
+          favoriteLoading: {
+            ...state.favoriteLoading,
+
+            [youtubeId]: false,
+          },
+        }));
+
+        throw error;
+      }
+    },
+
+    /* =====================================================
+     * TOGGLE CURRENT FAVORITE
+     * =================================================== */
+
+    toggleCurrentFavorite: async () => {
+      const { currentSong, favoriteSaving } = get();
+
+      if (!currentSong || !isValidVideoId(currentSong.videoId)) {
+        return false;
+      }
+
+      const youtubeId = currentSong.videoId;
+
+      /*
+       * Prevent duplicate requests
+       * for the same song.
+       */
+      if (favoriteSaving[youtubeId]) {
+        return get().favoriteStatuses[youtubeId] ?? false;
+      }
+
+      return get().toggleFavorite({
+        title: currentSong.title,
+
+        artist: currentSong.artist,
+
+        youtubeId,
+      });
+    },
+
+    /* =====================================================
+     * TOGGLE ANY FAVORITE
+     * =================================================== */
+
+    toggleFavorite: async (song) => {
+      const youtubeId = song.youtubeId;
+
+      if (!isValidVideoId(youtubeId)) {
+        return false;
+      }
+
+      const state = get();
+
+      /*
+       * Prevent double clicks while
+       * this specific song is saving.
+       */
+      if (state.favoriteSaving[youtubeId]) {
+        return state.favoriteStatuses[youtubeId] ?? false;
+      }
+
+      const previousValue = state.favoriteStatuses[youtubeId] ?? false;
+
+      const nextValue = !previousValue;
+
+      /*
+       * Optimistic update.
+       *
+       * The UI changes immediately.
+       */
+      set((state) => ({
+        favoriteStatuses: {
+          ...state.favoriteStatuses,
+
+          [youtubeId]: nextValue,
+        },
+
+        liked:
+          state.currentSong?.videoId === youtubeId ? nextValue : state.liked,
+
+        favoriteSaving: {
+          ...state.favoriteSaving,
+
+          [youtubeId]: true,
+        },
+      }));
+
+      try {
+        /*
+         * Save/remove favorite in DB.
+         */
+        const result = await toggleFavoriteSong(song);
+
+        const actualLiked = result.liked;
+
+        /*
+         * Use the actual database result.
+         */
+        set((state) => ({
+          favoriteStatuses: {
+            ...state.favoriteStatuses,
+            [youtubeId]: actualLiked,
+          },
+
+          liked:
+            state.currentSong?.videoId === youtubeId
+              ? actualLiked
+              : state.liked,
+
+          /*
+           * IMPORTANT:
+           *
+           * This is `favoriteSaving`.
+           *
+           * NOT `favoriteSavingIds`.
+           */
+          favoriteSaving: {
+            ...state.favoriteSaving,
+
+            [youtubeId]: false,
+          },
+        }));
+
+        return actualLiked;
+      } catch (error) {
+        console.error("Error toggling favorite:", error);
+
+        /*
+         * Database failed.
+         *
+         * Roll back optimistic update.
+         */
+        set((state) => ({
+          favoriteStatuses: {
+            ...state.favoriteStatuses,
+
+            [youtubeId]: previousValue,
+          },
+
+          liked:
+            state.currentSong?.videoId === youtubeId
+              ? previousValue
+              : state.liked,
+
+          favoriteSaving: {
+            ...state.favoriteSaving,
+
+            [youtubeId]: false,
+          },
+        }));
+
+        throw error;
+      }
+    },
+
+    /* =====================================================
+     * CLEAR PLAYLIST
+     * =================================================== */
+
     clearPlaylist: () => {
       set({
         playlist: null,
+
         currentSongIndex: -1,
+
         currentSong: null,
 
         isPlaying: false,
 
         progress: 0,
+
         duration: 0,
+
         seekTarget: null,
 
         liked: false,
+
+        /*
+         * Do NOT clear favoriteStatuses.
+         *
+         * Favorites belong to songs,
+         * not playlists.
+         */
       });
     },
 

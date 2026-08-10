@@ -39,6 +39,15 @@ export const generatedPlaylistSchema = z.object({
   }),
 });
 
+
+export const savePlaylistRequestSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  moods: z.array(z.string().min(1)).min(1),
+  prompt: z.string().trim().min(3),
+});
+
+export type SavePlaylistData = z.infer<typeof savePlaylistRequestSchema>;
 export type GeneratePlaylistRequest = z.infer<typeof generatePlaylistRequestSchema>;
 export type GeneratedPlaylistDraft = z.infer<typeof generatedPlaylistDraftSchema>;
 export type GeneratedPlaylist = z.infer<typeof generatedPlaylistSchema>;

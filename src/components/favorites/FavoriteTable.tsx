@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
-import EmptyState from "@/components/track/EmptyState";
 import { buildFavoritePlaylistSongs } from "@/lib/services/favorites";
 import { useAudioStore } from "@/stores/audioStore";
 import FavoriteSong from "@/types/favorite";
 import FavoriteRow from "./FavoriteRow";
+import EmptyFavorites from "./EmptyFavorites";
 
 interface Props {
   songs: FavoriteSong[];
@@ -14,11 +13,15 @@ interface Props {
 
 export default function FavoriteTable({ songs }: Props) {
   const [favoriteSongs, setFavoriteSongs] = useState(songs);
+  const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+
   const setPlaylist = useAudioStore((state) => state.setPlaylist);
   const selectSong = useAudioStore((state) => state.selectSong);
+  const isPlaying = useAudioStore((state) => state.isPlaying);
 
   function handlePlay(song: FavoriteSong) {
     const index = favoriteSongs.findIndex((item) => item.id === song.id);
+
     if (index < 0) return;
 
     setPlaylist({
@@ -27,44 +30,66 @@ export default function FavoriteTable({ songs }: Props) {
       mood: ["favorites"],
       songs: buildFavoritePlaylistSongs(favoriteSongs),
     });
+
+    setPlayingSongId(song.id);
     selectSong(index);
   }
 
   if (favoriteSongs.length === 0) {
-    return (
-      <EmptyState
-        title="No Favorite Songs Yet"
-        description="Songs you like will appear here."
-      />
-    );
+    return <EmptyFavorites />;
   }
 
   return (
-    <div className="w-full select-none">
-      {/* Table grid layout matching Spotify exactly */}
-      <div className="mb-4 grid grid-cols-[40px_4fr_3fr_auto_minmax(120px,auto)] gap-4 border-b border-zinc-800 px-4 pb-3 text-sm font-medium text-zinc-500">
-        <div className="pl-1">#</div>
-        <div>Title</div>
-        <div>Collection</div>
-        <div />
-        <div className="text-right pr-4">Added</div>
-      </div>
+    <table className="w-full table-fixed">
+      {/* Table Header */}
+      <thead>
+        <tr className="border-b border-zinc-800 text-left text-sm text-zinc-400">
+          {/* # */}
+          <th className="w-12 px-2 py-1.5 font-normal">#</th>
 
-      <div className="flex flex-col gap-1">
-        {favoriteSongs.map((song, index) => (
-          <FavoriteRow
-            key={song.id}
-            song={song}
-            index={index}
-            onPlay={handlePlay}
-            onFavoriteChange={(liked) => {
-              if (!liked) {
-                setFavoriteSongs((current) => current.filter((item) => item.id !== song.id));
-              }
-            }}
-          />
-        ))}
-      </div>
-    </div>
+          {/* Title */}
+          <th className="px-2 py-1.5 font-normal">Title</th>
+
+          {/* Collection */}
+          <th className="w-[22%] px-2 py-1.5 font-normal">Collection</th>
+
+          {/* Status */}
+          <th className="w-20 px-2 py-1.5 text-center font-normal">Status</th>
+
+          {/* Added */}
+          <th className="w-32 px-2 py-1.5 pr-4 text-right font-normal">
+            Added
+          </th>
+        </tr>
+      </thead>
+
+      {/* Favorite Songs */}
+      <tbody>
+        {favoriteSongs.map((song, index) => {
+          const songIsPlaying = isPlaying && playingSongId === song.id;
+
+          return (
+            <FavoriteRow
+              key={song.id}
+              song={song}
+              index={index}
+              isPlaying={songIsPlaying}
+              onPlay={handlePlay}
+              onFavoriteChange={(liked) => {
+                if (!liked) {
+                  setFavoriteSongs((current) =>
+                    current.filter((item) => item.id !== song.id)
+                  );
+
+                  if (playingSongId === song.id) {
+                    setPlayingSongId(null);
+                  }
+                }
+              }}
+            />
+          );
+        })}
+      </tbody>
+    </table>
   );
 }

@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { useAudioStore } from "@/stores/audioStore";
 import { generatePlaylist } from "@/lib/services/playlist-generation-client";
 import GeneratePromptForm from "./generate-prompt";
@@ -26,10 +25,11 @@ export default function MusicMoodGeneratePage() {
     setError("");
 
     try {
+      //generate playlist based on the prompt
       const playlist = await generatePlaylist(prompt);
+      //set the playlist in the store and redirect to the now playing page
       setStorePlaylist(playlist);
-      const playlistParam = encodeURIComponent(JSON.stringify(playlist));
-      router.push(`/playing?playlist=${playlistParam}`);
+      router.push("/playing");
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Something went wrong."

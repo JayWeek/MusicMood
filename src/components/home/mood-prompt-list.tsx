@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  ChevronRight,
-  LoaderCircle,
-  Music2,
-  Play,
-  RefreshCw,
-} from "lucide-react";
+import { ChevronRight, Music2, Play, RefreshCw } from "lucide-react";
+import MoodPromptListSkeleton from "./PromptRowSkeleton";
 
 export interface GeneratedMoodPrompt {
   prompt: string;
@@ -33,26 +28,7 @@ const MoodPromptList = ({
   onRegenerate,
 }: MoodPromptListProps) => {
   if (isLoading) {
-    return (
-      <div className="flex min-h-52 items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <LoaderCircle
-            className="size-7 animate-spin text-[#1ed760]"
-            aria-hidden="true"
-          />
-
-          <div>
-            <p className="font-medium text-white">
-              Creating {selectedMood?.toLowerCase()} ideas
-            </p>
-
-            <p className="mt-1 text-sm text-[#b3b3b3]">
-              Finding listening moments that match your mood.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <MoodPromptListSkeleton />;
   }
 
   if (error) {

@@ -7,10 +7,12 @@ import {
   History,
   Heart,
   Settings,
-  Library,
   Music,
+  ListMusic,
 } from "lucide-react";
 import LogOutBtn from "../auth/LogoutBtn";
+import RenderPlaylistView from "@/components/playlist/PlaylistData";
+import { usePlaylists } from "@/context/PlaylistContext";
 
 const menuItems = [
   {
@@ -47,7 +49,9 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
-  const path = usePathname()
+  const path = usePathname();
+  const { savedPlaylists, isLoading, error } = usePlaylists();
+
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-800 bg-black md:flex">
       {/* Logo */}
@@ -56,13 +60,11 @@ export default function Sidebar() {
           MusicMood
         </Link>
 
-        <p className="text-sm text-zinc-400 mt-1">
-          AI Music Generator
-        </p>
+        <p className="mt-1 text-sm text-zinc-400">AI Music Generator</p>
       </div>
 
       {/* Navigation */}
-      <nav className="px-3 space-y-2">
+      <nav className="space-y-2 px-3">
         {menuItems.map((item) => {
           const Icon = item.icon;
 
@@ -70,7 +72,7 @@ export default function Sidebar() {
             <Link
               key={item.title}
               href={item.href}
-              className={`flex items-center gap-4 rounded-xl px-4 py-3 transition hover:bg-zinc-900 hover:text-white ${path === item.href ? 'text-green-500' : 'text-zinc-300'}`}
+              className={`flex items-center gap-4 rounded-xl px-4 py-3 transition hover:bg-zinc-900 hover:text-white ${path === item.href ? "text-green-500" : "text-zinc-300"}`}
             >
               <Icon size={22} />
 
@@ -82,33 +84,16 @@ export default function Sidebar() {
 
       {/* Library */}
       <div className="mt-10 flex-1 overflow-y-auto px-6 pb-6">
-        <div className="flex items-center gap-3 text-zinc-400">
-          <Library size={20} />
+        <div className="my-3 flex items-center gap-3 text-zinc-400">
+          <ListMusic size={20} />
           <span className="font-medium">Your Library</span>
         </div>
 
-        <div className="mt-5 space-y-3">
-          <div className="rounded-lg bg-zinc-900 p-3">
-            <p className="font-medium">Late Night Coding</p>
-            <p className="text-xs text-zinc-500">
-              Generated Playlist
-            </p>
-          </div>
-
-          <div className="rounded-lg bg-zinc-900 p-3">
-            <p className="font-medium">Rainy Evening</p>
-            <p className="text-xs text-zinc-500">
-              Generated Playlist
-            </p>
-          </div>
-
-          <div className="rounded-lg bg-zinc-900 p-3">
-            <p className="font-medium">Workout Mix</p>
-            <p className="text-xs text-zinc-500">
-              Generated Playlist
-            </p>
-          </div>
-        </div>
+        <RenderPlaylistView
+          data={savedPlaylists}
+          isLoading={isLoading}
+          isError={!!error}
+        />
       </div>
 
       <div className="mt-auto w-full border-t border-zinc-800 p-4">

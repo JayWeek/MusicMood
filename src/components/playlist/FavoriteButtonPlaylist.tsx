@@ -2,25 +2,25 @@
 
 import { Heart } from "lucide-react";
 
-interface FavoriteButtonProps {
+interface FavoriteButtonPlaylistProps {
   liked: boolean;
   loading?: boolean;
   size?: number;
-  onClick: () => void;
+  onClick: (playlistId: string) => Promise<void>;
   className?: string;
 }
 
-export default function FavoriteButton({
+export default function FavoriteButtonPlaylist({
   liked,
   loading = false,
   size = 18,
   onClick,
   className = "",
-}: FavoriteButtonProps) {
+}: FavoriteButtonPlaylistProps) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => onClick}
       disabled={loading}
       aria-label={liked ? "Remove from favorites" : "Add to favorites"}
       aria-pressed={liked}

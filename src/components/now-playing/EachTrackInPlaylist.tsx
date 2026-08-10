@@ -1,14 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { Heart, Music2, Pause, Play } from "lucide-react";
-import { PlaylistSong } from "@/stores/audioStore";
+import { Music2, Pause, Play } from "lucide-react";
+
+import { PlaylistSong, useAudioStore } from "@/stores/audioStore";
+import FavoriteButton from "../favorites/FavoriteButton";
 
 interface EachTrackInPlaylistProps {
   song: PlaylistSong;
   index: number;
   playing: boolean;
-  liked: boolean;
   onClick?: () => void;
   isDefault?: PlaylistSong;
 }
@@ -46,104 +47,136 @@ export default function EachTrackInPlaylist({
   song,
   index,
   playing,
-  liked,
   onClick,
 }: EachTrackInPlaylistProps) {
   const artwork = getTrackArtwork(song);
 
+  /*
+   * Favorite state comes directly from Zustand.
+   */
+  const isFavorite = useAudioStore(
+    (state) => state.favoriteStatuses[song.videoId] ?? false
+  );
+
+  /*
+   * Saving state is also per song.
+   *
+   * Example:
+   *
+   * favoriteSaving = {
+   *   "abc123": true,
+   *   "xyz456": false
+   * }
+   */
+  const isFavoriteSaving = useAudioStore(
+    (state) => state.favoriteSaving[song.videoId] ?? false
+  );
+
+  const toggleFavorite = useAudioStore((state) => state.toggleFavorite);
+
+  const favoriteSong = {
+    title: song.title,
+    artist: song.artist,
+    youtubeId: song.videoId,
+  };
+
+  const handleFavorite = async () => {
+    if (!song.videoId || isFavoriteSaving) {
+      return;
+    }
+
+    try {
+      await toggleFavorite(favoriteSong);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
   return (
-    <li className="list-none">
-      <button
-        type="button"
-        onClick={onClick}
-        className="group grid w-full grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-[#2a2a2a] focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
-        aria-label={
-          playing
-            ? `Pause ${song.title} by ${song.artist}`
-            : `Play ${song.title} by ${song.artist}`
-        }
+    <div className="flex items-center gap-3 rounded p-2 px-2 py-2 hover:bg-zinc-800/50">
+      {/* Track number */}
+      <span
+        className={`text-sm tabular-nums ${
+          playing ? "text-[#1ed760]" : "text-zinc-400"
+        }`}
       >
-        <div className="relative flex size-9 items-center justify-center">
-          {playing ? (
-            <Pause
-              className="size-4 fill-white text-white"
-              aria-hidden="true"
+        {index + 1}
+      </span>
+
+      {/* Track information */}
+      <div className="flex min-w-0 items-center gap-3">
+        {/* Thumbnail / Play Button */}
+        <button
+          type="button"
+          onClick={onClick}
+          aria-label={
+            playing
+              ? `Pause ${song.title} by ${song.artist}`
+              : `Play ${song.title} by ${song.artist}`
+          }
+          className="group/thumbnail relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-[#1ed760] to-[#063d1b] focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
+        >
+          {artwork ? (
+            <Image
+              src={artwork}
+              alt={`${song.title} artwork`}
+              width={48}
+              height={48}
+              className="size-full object-cover"
             />
           ) : (
-            <>
-              <span className="text-sm text-[#b3b3b3] group-hover:hidden">
-                {index + 1}
-              </span>
+            <Music2 className="size-5 text-black" aria-hidden="true" />
+          )}
 
-              <Play
-                className="hidden size-4 fill-white text-white group-hover:block"
+          {/* Hover / playing overlay */}
+          <div
+            className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${
+              playing
+                ? "opacity-100"
+                : "opacity-0 group-hover/thumbnail:opacity-100"
+            }`}
+          >
+            {playing ? (
+              <Pause
+                className="size-5 fill-white text-white"
                 aria-hidden="true"
               />
-            </>
-          )}
-        </div>
-
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-[#1ed760] to-[#063d1b]">
-            {artwork ? (
-              <Image
-                src={artwork}
-                alt={`${song.title} artwork`}
-                width={48}
-                height={48}
-                className="size-full object-cover"
-              />
             ) : (
-              <Music2 className="size-5 text-black" aria-hidden="true" />
-            )}
-
-            {artwork && (
-              <div className="absolute inset-0 hidden items-center justify-center bg-black/50 group-hover:flex">
-                {playing ? (
-                  <Pause
-                    className="size-5 fill-white text-white"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Play
-                    className="size-5 fill-white text-white"
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
+              <Play
+                className="size-5 fill-white text-white"
+                aria-hidden="true"
+              />
             )}
           </div>
+        </button>
 
-          <div className="min-w-0">
-            <p
-              className={`truncate text-sm font-medium ${
-                playing ? "text-[#1ed760]" : "text-white"
-              }`}
-            >
-              {song.title}
-            </p>
-
-            <p className="mt-0.5 truncate text-sm text-[#b3b3b3]">
-              {song.artist}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-[#b3b3b3] tabular-nums">
-            {song.duration}
-          </span>
-
-          <Heart
-            className={`size-4 transition-colors ${
-              liked
-                ? "fill-[#1ed760] text-[#1ed760]"
-                : "text-[#b3b3b3] group-hover:text-white"
+        {/* Title / Artist */}
+        <div className="min-w-0">
+          <p
+            className={`truncate text-sm font-medium ${
+              playing ? "text-[#1ed760]" : "text-white"
             }`}
-            aria-label={liked ? "Liked" : "Not liked"}
-          />
+          >
+            {song.title}
+          </p>
+
+          <p className="mt-0.5 truncate text-sm text-[#b3b3b3]">
+            {song.artist}
+          </p>
         </div>
-      </button>
-    </li>
+      </div>
+
+      {/* Favorite */}
+      <div className="ml-auto">
+        <FavoriteButton
+          liked={isFavorite}
+          loading={isFavoriteSaving}
+          onClick={() => {
+            void handleFavorite();
+          }}
+          size={16}
+        />
+      </div>
+    </div>
   );
 }

@@ -10,8 +10,6 @@ export default function NowPlayingPanel() {
 
   const isPlaying = useAudioStore((state) => state.isPlaying);
 
-  const liked = useAudioStore((state) => state.liked);
-
   const play = useAudioStore((state) => state.play);
 
   const pause = useAudioStore((state) => state.pause);
@@ -39,48 +37,41 @@ export default function NowPlayingPanel() {
       return;
     }
 
-    // selectSong updates currentSong/currentSongIndex
-    // and sets isPlaying to true.
     selectSong(index);
   };
 
   return (
-    <div className="p-5 shadow-2xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Now Playing</h2>
-      </div>
-
+    <div>
       <div className="mt-5 pt-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-white capitalize">
-            {playlist?.mood?.at(0) ?? "Up Next"}
+            {playlist?.title}
           </h3>
 
           <span className="text-xs text-zinc-500">{songs.length}</span>
         </div>
 
-        <ul className="space-y-2 text-sm text-zinc-400">
+        <div className="space-y-2 text-sm text-zinc-400">
           {songs.length > 0 ? (
             songs.map((song, index) => {
               const isActiveSong = index === currentSongIndex;
 
               return (
                 <EachTrackInPlaylist
-                  key={index}
+                  key={`${song.videoId}-${index}`}
                   song={song}
                   index={index}
                   playing={isActiveSong && isPlaying}
-                  liked={isActiveSong && liked}
                   onClick={() => handleTrackClick(index)}
                 />
               );
             })
           ) : (
-            <li className="rounded-lg bg-zinc-950/50 px-3 py-3 text-sm text-zinc-500">
+            <div className="rounded-lg bg-zinc-950/50 px-3 py-3 text-sm text-zinc-500">
               No tracks available yet.
-            </li>
+            </div>
           )}
-        </ul>
+        </div>
       </div>
     </div>
   );
