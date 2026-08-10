@@ -26,13 +26,9 @@ export default function TrackControls({ playing, liked, onToggle, onLike, favori
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-2 text-sm text-zinc-400"><Sparkles size={14} className="text-green-400" />AI Mix</div>
         <div className="flex items-center gap-2">
-          {favoriteSong ? (
-            <FavoriteButton song={favoriteSong} initialLiked={liked} size={16} className="rounded-full bg-zinc-800 p-2 hover:bg-zinc-700" />
-          ) : (
-            <button type="button" onClick={onLike} className={liked ? "rounded-full bg-green-500/15 p-2 text-green-400" : "rounded-full bg-zinc-800 p-2 text-zinc-400 hover:text-white"}>
-              <Heart size={16} className={liked ? "fill-current" : ""} />
-            </button>
-          )}
+          <button type="button" onClick={onLike} className={liked ? "rounded-full bg-green-500/15 p-2 text-green-400" : "rounded-full bg-zinc-800 p-2 text-zinc-400 hover:text-white"}>
+            <Heart size={16} className={liked ? "fill-current" : ""} />
+          </button>
           <button type="button" className="rounded-full bg-zinc-800 p-2 text-zinc-400 transition hover:text-white"><Repeat2 size={16} /></button>
           <button type="button" className="rounded-full bg-zinc-800 p-2 text-zinc-400 transition hover:text-white"><Volume2 size={16} /></button>
         </div>

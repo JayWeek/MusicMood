@@ -1,7 +1,7 @@
 "use client";
 
 import PlaylistHeader from "@/components/playlist/PlayListHeader";
-import TrackTable from "@/components/playlist/FavouritePlaylistTable";
+import TrackTable from "@/components/playlist/TrackTable";
 
 import { mockTracks } from "@/lib/mockTracks";
 import Track from "@/types/track";

@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 
+import type { SavedPlaylist } from "@/types/playlist";
+
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 import RightPanel from "@/components/layout/RightPanel";
@@ -16,14 +18,16 @@ interface DashboardClientLayoutProps {
     name: string;
     id: string;
   };
+  initialPlaylists?: SavedPlaylist[];
 }
 
 export default function DashboardClientLayout({
   children,
   userData,
+  initialPlaylists = [],
 }: DashboardClientLayoutProps) {
   return (
-    <PlaylistProvider userId={userData.id} initialPlaylists={[]}>
+    <PlaylistProvider userId={userData.id} initialPlaylists={initialPlaylists}>
       <DashboardContent userData={userData}>{children}</DashboardContent>
     </PlaylistProvider>
   );
