@@ -4,7 +4,8 @@
 import { Play } from "lucide-react";
 import { SavedPlaylist } from "@/types/playlist";
 import FavoriteButtonPlaylist from "./FavoriteButtonPlaylist";
-
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 interface TrackRowProps {
   playlistData: SavedPlaylist;
   showPlayedAt?: boolean;
@@ -20,8 +21,16 @@ export default function EachFavouritePlaylistRow({
   onPlay,
   onLikedClick,
 }: TrackRowProps) {
+  const router = useRouter();
+
+  const handleRowClick = () => {
+    router.push(`/playing?playlist=${playlistData.playlistId}`);
+  };
   return (
-    <tr className="group text-xs transition hover:bg-zinc-900/50">
+    <tr
+      className="group text-xs transition hover:bg-zinc-900/50 pointer-none:hover:cursor-pointer"
+      onClick={handleRowClick}
+    >
       {/* Number / Play */}
       <td className="w-12 px-4">
         <div className="relative flex items-center justify-center">
@@ -29,7 +38,10 @@ export default function EachFavouritePlaylistRow({
 
           <button
             type="button"
-            onClick={() => onPlay?.(playlistData)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlay?.(playlistData);
+            }}
             className="hidden group-hover:block"
             aria-label={`Play ${playlistData.title}`}
           >
@@ -42,7 +54,7 @@ export default function EachFavouritePlaylistRow({
       <td className="px-4 py-3">
         <div className="flex items-center gap-4">
           {playlistData.thumbnail && (
-            <img
+            <Image
               src={playlistData.thumbnail}
               alt={playlistData.title}
               width={50}
@@ -62,7 +74,7 @@ export default function EachFavouritePlaylistRow({
 
       {/* Moods */}
       <td className="px-4">
-        <td className="px-4 text-zinc-400">{playlistData.title}</td>
+        <p className="px-4 text-zinc-400">{playlistData.title}</p>
       </td>
 
       {/* Favourite Action */}

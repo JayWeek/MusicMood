@@ -2,6 +2,7 @@ import { ListMusic } from "lucide-react";
 // Use native <img> for small playlist thumbnails in sidebar
 import { SavedPlaylist } from "@/types/playlist";
 import Link from "next/link";
+import Image from "next/image";
 
 export function PlaylistDataError() {
   return (
@@ -19,7 +20,8 @@ export function FavouritePlaylistEmpty() {
   return (
     <div className="rounded-xl bg-zinc-900 p-2">
       <p className="text-xs text-zinc-400">
-        You dont have any saved playlists yet generate and save one to see it here.
+        You dont have any saved playlists yet generate and save one to see it
+        here.
       </p>
       <Link
         href="/generate"
@@ -45,7 +47,9 @@ export function EachPlaylist({
       <div className="flex">
         <div>
           {thumbnail ? (
-            <img
+            <Image
+              width={60}
+              height={60}
               src={thumbnail}
               alt={prompt}
               loading="lazy"

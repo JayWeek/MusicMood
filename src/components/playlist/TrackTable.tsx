@@ -1,5 +1,6 @@
 import { Play } from "lucide-react";
 import Track from "@/types/track";
+import Image from "next/image";
 
 interface TrackTableProps {
   tracks: Track[];
@@ -30,7 +31,7 @@ export default function TrackTable({ tracks, onPlay, onLike }: TrackTableProps) 
             <td className="px-3 py-3">
               <div className="flex items-center gap-3">
                 {track.artwork && (
-                  <img
+                  <Image
                     src={track.artwork}
                     alt={track.title}
                     width={48}
