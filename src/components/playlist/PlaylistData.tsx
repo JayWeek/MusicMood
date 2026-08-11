@@ -96,7 +96,9 @@ export default function RenderPlaylistViewInSideBar({
   isError,
 }: RenderPlaylistViewProps) {
   if (isLoading) {
-    return <FavouritePlaylistEmptySkeleton />;
+    return Array.from({ length: 3 }).map((_, index) => (
+      <FavouritePlaylistEmptySkeleton key={index} />
+    ));
   }
   if (isError) {
     return <PlaylistDataError />;
