@@ -47,7 +47,7 @@ export default function Hero() {
         </div>
 
         {/* Right */}
-        <div className="relative flex w-full max-w-lg items-center justify-center">
+        <div className="relative my-4 flex w-full max-w-lg items-center justify-center">
           {/* Main Card */}
           <div className="w-full rounded-3xl border border-white/10 bg-[#181818] p-8 shadow-2xl">
             <div className="mb-6 flex items-center gap-4">
