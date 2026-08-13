@@ -2,6 +2,7 @@
 
 // Use native <img> for larger images only where needed; history card images can be lazy-loaded
 import { PlayCircle } from "lucide-react";
+import Image from "next/image";
 
 interface Props {
   playlist: {
@@ -14,13 +15,10 @@ interface Props {
   };
 }
 
-export default function HistoryPlaylistCard({
-  playlist,
-}: Props) {
+export default function HistoryPlaylistCard({ playlist }: Props) {
   return (
     <div className="group rounded-xl bg-zinc-900 p-4 transition hover:bg-zinc-800">
-
-      <img
+      <Image
         src={playlist.cover}
         alt={playlist.title}
         width={300}
@@ -29,13 +27,9 @@ export default function HistoryPlaylistCard({
         className="rounded-lg"
       />
 
-      <h3 className="mt-4 text-xl font-semibold">
-        {playlist.title}
-      </h3>
+      <h3 className="mt-4 text-xl font-semibold">{playlist.title}</h3>
 
-      <p className="text-sm text-zinc-400">
-        {playlist.mood}
-      </p>
+      <p className="text-sm text-zinc-400">{playlist.mood}</p>
 
       <p className="mt-2 text-xs text-zinc-500">
         {playlist.tracks} Songs • {playlist.createdAt}
@@ -45,7 +39,6 @@ export default function HistoryPlaylistCard({
         <PlayCircle size={18} />
         Play Again
       </button>
-
     </div>
   );
 }

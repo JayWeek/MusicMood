@@ -1,4 +1,5 @@
 import { Play } from "lucide-react";
+import Image from "next/image";
 
 const playlists = [
   {
@@ -51,7 +52,9 @@ export default function FeaturedPlaylists() {
             >
               <div className="relative overflow-hidden rounded-xl">
 
-                <img
+                <Image
+                width={300}
+                height={300}
                   src={playlist.image}
                   alt={playlist.title}
                   className="aspect-square w-full object-cover transition duration-500 group-hover:scale-105"

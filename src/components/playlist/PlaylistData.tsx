@@ -33,41 +33,33 @@ export function FavouritePlaylistEmpty() {
   );
 }
 
-export function EachPlaylist({
-  playlistId,
-  prompt,
-  thumbnail,
-  description,
-}: SavedPlaylist) {
+export function EachPlaylist({ playlistId, prompt, thumbnail }: SavedPlaylist) {
   return (
     <Link
-      className="h-15 rounded-xl bg-zinc-900 p-0.5 transition hover:bg-zinc-800"
+      className="h-10 rounded-xl bg-zinc-900 p-0.5 transition hover:bg-zinc-800"
       href={`/playing?playlist=${playlistId}`}
     >
       <div className="flex">
         <div>
           {thumbnail ? (
             <Image
-              width={60}
-              height={60}
+              width={30}
+              height={30}
               src={thumbnail}
               alt={prompt}
               loading="lazy"
-              className="h-15 w-full object-cover"
+              className="h-10 w-full object-cover"
             />
           ) : (
             <ListMusic
               size={18}
-              className="h-15 w-full object-cover text-green-400"
+              className="h-10 w-full object-cover text-green-400"
             />
           )}
         </div>
 
         <div className="flex flex-col justify-center gap-1 px-2 py-1">
           <h3 className="text-xs font-semibold text-white">{prompt}</h3>
-          <p className="text-[10px] text-zinc-400">
-            {description.slice(0, 50)} {description.length > 50 ? "..." : ""}
-          </p>
         </div>
       </div>
     </Link>
@@ -76,7 +68,7 @@ export function EachPlaylist({
 
 export function FavouritePlaylistEmptySkeleton() {
   return (
-    <div className="rounded-xl bg-zinc-900 p-2">
+    <div className="my-2 rounded-xl bg-zinc-900 p-2">
       <div className="h-3 w-full animate-pulse rounded bg-zinc-800" />
       <div className="mt-1 h-3 w-4/5 animate-pulse rounded bg-zinc-800" />
       <div className="mt-1 h-3 w-16 animate-pulse rounded bg-zinc-800" />
@@ -96,7 +88,7 @@ export default function RenderPlaylistViewInSideBar({
   isError,
 }: RenderPlaylistViewProps) {
   if (isLoading) {
-    return Array.from({ length: 3 }).map((_, index) => (
+    return Array.from({ length: 7 }).map((_, index) => (
       <FavouritePlaylistEmptySkeleton key={index} />
     ));
   }
@@ -109,7 +101,7 @@ export default function RenderPlaylistViewInSideBar({
   }
 
   return (
-    <div className="grid-row-1 sm:grid-row-2 xl:grid-row-3 grid gap-6">
+    <div className="grid-row-1 sm:grid-row-2 xl:grid-row-3 grid gap-3">
       {data.map((playlist) => (
         <EachPlaylist key={playlist.playlistId} {...playlist} />
       ))}

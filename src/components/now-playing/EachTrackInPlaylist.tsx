@@ -5,6 +5,7 @@ import { Music2, Pause, Play } from "lucide-react";
 
 import { PlaylistSong, useAudioStore } from "@/stores/audioStore";
 import FavoriteButton from "../favorites/FavoriteButton";
+import Image from "next/image";
 
 interface EachTrackInPlaylistProps {
   song: PlaylistSong;
@@ -117,7 +118,7 @@ export default function EachTrackInPlaylist({
           className="group/thumbnail relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-[#1ed760] to-[#063d1b] focus-visible:ring-2 focus-visible:ring-[#1ed760] focus-visible:outline-none"
         >
           {artwork ? (
-              <img
+              <Image
                 src={artwork}
                 alt={`${song.title} artwork`}
                 width={48}

@@ -67,7 +67,7 @@ const MoodPromptList = ({
           </p>
 
           <h2
-            className={`mt-1 text-xl font-bold text-white sm:text-2xl ${selectedMood} ? capitalize`}
+            className={`mt-1 font-bold text-white md:text-xs xl:text-sm ${selectedMood ? "capitalize" : ""}`}
           >
             {`${selectedMood} Listening ideas`}
           </h2>
@@ -85,7 +85,7 @@ const MoodPromptList = ({
         )}
       </div>
 
-      <div className="px-2 pb-3 sm:px-4">
+      <div className="pb-3">
         {prompts.map((item, index) => (
           <PromptRow
             key={`${item.prompt}-${index}`}
@@ -136,7 +136,7 @@ export const PromptRow = ({ item, index, onClick }: PromptRowProps) => {
             {item.prompt}
           </p>
 
-          <p className="mt-0.5 truncate text-sm text-[#b3b3b3]">
+          <p className="mt-0.5 truncate text-xs text-[#b3b3b3]">
             {item.description}
           </p>
 

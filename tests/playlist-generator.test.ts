@@ -3,7 +3,7 @@ import test from "node:test";
 
 process.env.MUSIC_MOOD_GROQ_API_KEY = "test-key";
 
-const { generatePlaylistFromPrompt } = require("../src/lib/services/playlist-generator");
+import { generatePlaylistFromPrompt } from "../src/lib/services/playlist-generator";
 
 test("generatePlaylistFromPrompt accepts a draft payload and enriches songs", async () => {
   const fakeClient = {
@@ -21,7 +21,10 @@ test("generatePlaylistFromPrompt accepts a draft payload and enriches songs", as
                     songs: [
                       { title: "Clair de lune", artist: "Debussy" },
                       { title: "Weightless", artist: "Marconi Union" },
-                      { title: "Satin Sheets", artist: "The Mamas & the Papas" },
+                      {
+                        title: "Satin Sheets",
+                        artist: "The Mamas & the Papas",
+                      },
                       { title: "River Flows in You", artist: "Yiruma" },
                       { title: "Moon River", artist: "Henry Mancini" },
                       { title: "A Thousand Years", artist: "Christina Perri" },
@@ -35,7 +38,7 @@ test("generatePlaylistFromPrompt accepts a draft payload and enriches songs", as
         }),
       },
     },
-  } as any;
+  } as const;
 
   const result = await generatePlaylistFromPrompt("calm focus", {
     client: fakeClient,
@@ -76,10 +79,16 @@ test("generatePlaylistFromPrompt falls back when structured JSON mode is unsuppo
                       songs: [
                         { title: "Clair de lune", artist: "Debussy" },
                         { title: "Weightless", artist: "Marconi Union" },
-                        { title: "Satin Sheets", artist: "The Mamas & the Papas" },
+                        {
+                          title: "Satin Sheets",
+                          artist: "The Mamas & the Papas",
+                        },
                         { title: "River Flows in You", artist: "Yiruma" },
                         { title: "Moon River", artist: "Henry Mancini" },
-                        { title: "A Thousand Years", artist: "Christina Perri" },
+                        {
+                          title: "A Thousand Years",
+                          artist: "Christina Perri",
+                        },
                         { title: "Dreams", artist: "Fleetwood Mac" },
                       ],
                     },
@@ -91,7 +100,7 @@ test("generatePlaylistFromPrompt falls back when structured JSON mode is unsuppo
         },
       },
     },
-  } as any;
+  } as const;
 
   const result = await generatePlaylistFromPrompt("focus and calm", {
     client: fakeClient,

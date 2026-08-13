@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 import type { SavedPlaylist } from "@/types/playlist";
 
@@ -45,18 +45,19 @@ function DashboardContent({
   };
 }) {
   const { savedPlaylists } = usePlaylists();
+  const [isOpen, setIsOpen] = useState(false);
 
   console.log("Dashboard saved playlists:", savedPlaylists);
 
   return (
     <div className="flex h-screen min-w-0 overflow-hidden">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
 
       {/* Main dashboard column */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Topbar */}
-        <Topbar name={userData.name} />
+        <Topbar name={userData.name} onMenuClick={() => setIsOpen(true)} />
 
         {/* Scrollable content */}
         <section className="min-h-0 flex-1 overflow-y-auto p-6">

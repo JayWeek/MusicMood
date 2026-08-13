@@ -1,4 +1,21 @@
-import type { SearchResult } from "yt-search";
+interface YouTubeVideo {
+  videoId?: string;
+  url?: string;
+  thumbnail?: string;
+  duration?:
+    | string
+    | {
+        timestamp?: string;
+      };
+}
+
+interface YouTubeSearchResult {
+  videos?: YouTubeVideo[];
+}
+
+interface YtSearch {
+  (query: string | { query: string }): Promise<YouTubeSearchResult>;
+}
 
 function extractYouTubeId(candidate?: string | null): string {
   if (!candidate) return "";
@@ -37,37 +54,32 @@ function extractYouTubeId(candidate?: string | null): string {
   return idMatch ? idMatch[1] : "";
 }
 
+
 export async function enrichSongsWithYouTube(searchQuery: string) {
   const importedYtSearch = await import("yt-search");
-  const ytSearch = (
-    importedYtSearch as {
-      default: (query: string | { query: string }) => Promise<SearchResult>;
-    }
-  ).default;
+
+  const ytSearch = importedYtSearch.default as YtSearch;
 
   const result = await ytSearch(searchQuery);
   const video = result.videos?.[0];
 
   const thumbnail = typeof video?.thumbnail === "string" ? video.thumbnail : "";
 
-  // Extract a usable video id from either the `videoId` field or the `url`.
-  const rawId = video?.videoId ?? (typeof video?.url === "string" ? video.url : "");
+  const rawId =
+    video?.videoId ?? (typeof video?.url === "string" ? video.url : "");
+
   const videoId = extractYouTubeId(rawId);
 
-  // Extract human-readable duration
   let formattedDuration = "unknown";
-  if (video?.duration) {
-    if (typeof video.duration === "string") {
-      formattedDuration = video.duration;
-    } else if (typeof video.duration === "object" && (video.duration as any).timestamp) {
-      formattedDuration = (video.duration as any).timestamp;
-    } else if (typeof (video.duration as any)?.toString === "function") {
-      try {
-        formattedDuration = String((video.duration as any).toString());
-      } catch {
-        formattedDuration = "unknown";
-      }
-    }
+
+  if (typeof video?.duration === "string") {
+    formattedDuration = video.duration;
+  } else if (
+    video?.duration &&
+    typeof video.duration === "object" &&
+    typeof video.duration.timestamp === "string"
+  ) {
+    formattedDuration = video.duration.timestamp;
   }
 
   return {
@@ -76,4 +88,3 @@ export async function enrichSongsWithYouTube(searchQuery: string) {
     duration: formattedDuration,
   };
 }
-
