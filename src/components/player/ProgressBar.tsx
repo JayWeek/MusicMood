@@ -23,7 +23,7 @@ export default function ProgressBar({ current, duration, onSeek }: Props) {
   const progressValue = Math.min(Math.max(current, 0), duration || 0);
 
   return (
-    <div className="flex w-full items-center gap-3">
+    <div className="flex w-full items-center gap-2">
       <span className="text-xs text-zinc-400">{formatTime(current)}</span>
 
       <input
