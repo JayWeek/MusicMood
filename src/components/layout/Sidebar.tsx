@@ -96,7 +96,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         }`}
       >
         {/* Header / Logo */}
-        <div className="relative px-6 py-8">
+        <div className="relative shrink-0 px-6 py-8">
           {/* Mobile Close Button */}
           <button
             type="button"
@@ -118,48 +118,52 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <p className="mt-1 text-sm text-zinc-400">AI Music Generator</p>
         </div>
 
-        {/* Navigation */}
-        <nav className="space-y-2 px-3">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
+        {/* Scrollable Content */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="space-y-2 px-3">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
 
-            const isActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-            return (
-              <Link
-                key={item.title}
-                href={item.href}
-                onClick={onClose}
-                className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm transition ${
-                  isActive
-                    ? "bg-zinc-900 text-green-500"
-                    : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
-                }`}
-              >
-                <Icon size={22} />
-                <span>{item.title}</span>
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm transition ${
+                    isActive
+                      ? "bg-zinc-900 text-green-500"
+                      : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
+                  }`}
+                >
+                  <Icon size={22} />
+                  <span>{item.title}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* Library */}
-        <div className="mt-10 flex-1 px-6 pb-6">
-          <div className="my-3 flex items-center gap-3 text-zinc-400">
-            <ListMusic size={20} />
-            <span className="font-medium">Your Library</span>
+          {/* Library */}
+          <div className="mt-10 px-6 pb-6">
+            <div className="my-3 flex items-center gap-3 text-zinc-400">
+              <ListMusic size={20} />
+
+              <span className="font-medium">Your Library</span>
+            </div>
+
+            <RenderPlaylistView
+              data={savedPlaylists}
+              isLoading={isLoading}
+              isError={!!error}
+            />
           </div>
-
-          <RenderPlaylistView
-            data={savedPlaylists}
-            isLoading={isLoading}
-            isError={!!error}
-          />
         </div>
 
-        {/* Logout */}
-        <div className="mt-auto w-full border-t border-zinc-800 p-4">
+        {/* Logout - Fixed at Bottom */}
+        <div className="w-full shrink-0 border-t border-zinc-800 p-4">
           <LogOutBtn />
         </div>
       </aside>
