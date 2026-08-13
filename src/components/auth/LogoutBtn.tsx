@@ -21,7 +21,7 @@ function ConfirmLogoutButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-red-500 px-5 py-2 font-semibold text-white transition hover:bg-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full bg-red-500 px-5 py-2 font-semibold text-white transition hover:bg-red-400 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Logging out…" : "Yes, log out"}
     </button>
@@ -35,13 +35,13 @@ export default function LogOutBtn() {
         render={
           <button
             type="button"
-            className="group flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-400 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-[0.98]"
+            className="group flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-400 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none active:scale-[0.98]"
           />
         }
       >
         <LogOut
           aria-hidden="true"
-          className="size-4 transition-transform group-hover:-translate-x-0.5"
+          className="size-3 transition-transform group-hover:-translate-x-0.5"
         />
         <span>Log out</span>
       </DialogTrigger>
