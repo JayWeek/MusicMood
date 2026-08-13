@@ -79,32 +79,32 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {isOpen && (
-        <button
-          type="button"
-          aria-label="Close sidebar"
-          onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-        />
-      )}
+      {/* Mobile Backdrop */}
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+          isOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+      />
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-zinc-800 bg-[#121212] transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col overflow-y-auto border-r border-zinc-800 bg-[#121212] transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Header / Logo */}
         <div className="relative px-6 py-8">
-          {/* Mobile close button */}
+          {/* Mobile Close Button */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close sidebar"
             className="absolute top-4 right-4 rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-900 hover:text-white md:hidden"
           >
-            <X className="h-5 w-5 cursor-pointer" />
+            <X className="h-5 w-5" />
           </button>
 
           <Link
@@ -138,7 +138,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 }`}
               >
                 <Icon size={22} />
-
                 <span>{item.title}</span>
               </Link>
             );
@@ -149,7 +148,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="mt-10 flex-1 overflow-y-auto px-6 pb-6">
           <div className="my-3 flex items-center gap-3 text-zinc-400">
             <ListMusic size={20} />
-
             <span className="font-medium">Your Library</span>
           </div>
 
